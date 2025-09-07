@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React from 'react';
+import { useSession, signOut } from 'next-auth/react';
 
 const NAV = [
   { name: 'Home', href: '/' },
@@ -13,6 +14,8 @@ const NAV = [
 
 export default function HeaderNav() {
   const pathname = usePathname();
+  const { data: session } = useSession(); // ✅ inside the component
+
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
 
@@ -33,13 +36,21 @@ export default function HeaderNav() {
     const active = pathname === href;
     const base = 'relative text-lg font-medium nav-link px-1 py-0.5 transition-colors';
     if (active) return `${base} text-solis-gold is-active`;
-    return `${base} ${isTransparent ? 'text-white nav-link--shadow hover:text-solis-gold' : 'text-navy hover:text-solis-gold'}`;
+    return `${base} ${isTransparent
+      ? 'text-white nav-link--shadow hover:text-solis-gold'
+      : 'text-navy hover:text-solis-gold'}`;
   };
+
+  const isAdmin =
+    session?.user?.email?.toLowerCase() ===
+    (process.env.NEXT_PUBLIC_ADMIN_EMAIL || '').toLowerCase();
 
   return (
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
-        isTransparent ? 'bg-transparent header--transparent' : 'bg-white/95 backdrop-blur-md warm-shadow'
+        isTransparent
+          ? 'bg-transparent header--transparent'
+          : 'bg-white/95 backdrop-blur-md warm-shadow'
       }`}
     >
       <nav className="container mx-auto px-6">
@@ -56,7 +67,9 @@ export default function HeaderNav() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-navy">Solis Espresso</h1>
-              <p className="text-xs text-navy-light -mt-1 tracking-wider">Artisanal Coffee</p>
+              <p className="text-xs text-navy-light -mt-1 tracking-wider">
+                Artisanal Coffee
+              </p>
             </div>
           </Link>
 
@@ -67,11 +80,19 @@ export default function HeaderNav() {
                 {item.name}
               </Link>
             ))}
-            {/* Keep Admin link visible for now; middleware still protects the route.
-                Once SessionProvider is wired, we can hide it for non-admins. */}
-            <Link href="/admin" className={linkClass('/admin')}>
-              Admin
-            </Link>
+            {isAdmin && (
+              <Link href="/admin" className={linkClass('/admin')}>
+                Admin
+              </Link>
+            )}
+            {isAdmin && (
+              <button
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="text-solis-gold font-medium"
+              >
+                Logout
+              </button>
+            )}
           </div>
 
           {/* Mobile toggle */}
@@ -95,13 +116,27 @@ export default function HeaderNav() {
           <div className="md:hidden border-t border-solis-gold/20 bg-white warm-shadow">
             <div className="flex flex-col px-6 py-4">
               {NAV.map((item) => (
-                <Link key={item.href} href={item.href} className="py-3 text-navy hover:text-solis-gold nav-link">
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="py-3 text-navy hover:text-solis-gold nav-link"
+                >
                   {item.name}
                 </Link>
               ))}
-              <Link href="/admin" className="py-3 text-navy hover:text-solis-gold nav-link">
-                Admin
-              </Link>
+              {isAdmin && (
+                <Link href="/admin" className="py-3 text-navy hover:text-solis-gold nav-link">
+                  Admin
+                </Link>
+              )}
+              {isAdmin && (
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="py-3 text-navy hover:text-solis-gold nav-link text-left"
+                >
+                  Logout
+                </button>
+              )}
             </div>
           </div>
         )}
