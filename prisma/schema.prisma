@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model MenuItem {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  category    Category
+  price       Float
+  imageUrl    String?
+  isFeatured  Boolean   @default(false)
+  ingredients Json?     // string[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ContactForm {
+  id          Int       @id @default(autoincrement())
+  name        String
+  email       String
+  phone       String?
+  subject     String?
+  message     String
+  inquiryType String    @default("general")
+  createdAt   DateTime  @default(now())
+}
+
+enum Category {
+  coffee
+  espresso
+  tea
+  pastries
+  sandwiches
+  desserts
+}
