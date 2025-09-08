@@ -7,7 +7,7 @@ type Item = {
   id: number;
   name: string;
   description?: string;
-  category: "coffee" | "espresso" | "tea" | "pastries" | "sandwiches" | "desserts";
+  category: "coffee" | "Cold Drinks" | "tea" | "pastries" | "sandwiches" | "desserts";
   price: number;
   imageUrl?: string;
   isFeatured: boolean;
@@ -17,7 +17,7 @@ type Item = {
 const categories = [
   { id: "all", label: "All Items" },
   { id: "coffee", label: "Coffee" },
-  { id: "espresso", label: "Espresso" },
+  { id: "Cold Drinks", label: "Cold Drinks" },
   { id: "tea", label: "Tea" },
   { id: "pastries", label: "Pastries" },
   { id: "sandwiches", label: "Sandwiches" },
