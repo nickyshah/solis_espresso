@@ -1,90 +1,160 @@
-'use client';
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import FadeIn from "@/components/FadeIn";
+"use client";
 
+import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+
+type Size = { id: number; size: "small" | "large"; price: number };
 type Item = {
   id: number;
   name: string;
-  description?: string;
-  category: "coffee" | "Cold Drinks" | "tea" | "pastries" | "sandwiches" | "desserts";
-  price: number;
-  imageUrl?: string;
+  description?: string | null;
+  category: "coffee" | "espresso" | "tea" | "pastries" | "sandwiches" | "desserts";
   isFeatured: boolean;
-  ingredients?: string[];
+  sizes: Size[];
 };
 
 const categories = [
   { id: "all", label: "All Items" },
   { id: "coffee", label: "Coffee" },
-  { id: "Cold Drinks", label: "Cold Drinks" },
+  { id: "espresso", label: "Espresso" },
   { id: "tea", label: "Tea" },
   { id: "pastries", label: "Pastries" },
   { id: "sandwiches", label: "Sandwiches" },
-  { id: "desserts", label: "Desserts" }
+  { id: "desserts", label: "Desserts" },
 ] as const;
 
 export default function MenuPage() {
   const [items, setItems] = useState<Item[]>([]);
-  const [active, setActive] = useState("all");
+  const [active, setActive] = useState<(typeof categories)[number]["id"]>("all");
 
-  useEffect(() => { fetch("/api/menu").then(r=>r.json()).then(setItems); }, []);
-  const filtered = active === "all" ? items : items.filter(i => i.category === active);
+  useEffect(() => {
+    fetch("/api/menu", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => setItems(Array.isArray(data) ? data : []));
+  }, []);
+
+  const filtered = useMemo(() => {
+    if (active === "all") return items;
+    return items.filter((i) => i.category === active);
+  }, [items, active]);
 
   return (
     <div className="min-h-screen">
-      <section className="py-20 solis-gradient text-white text-center overflow-hidden relative">
-        <motion.h1 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="text-5xl font-bold mb-4">Our Menu</motion.h1>
-        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="text-xl text-solis-gold">Carefully curated selection of premium coffee, food & treats</motion.p>
+      {/* Hero */}
+      <section className="py-20 solis-gradient relative overflow-hidden pt-40">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="container mx-auto px-6 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center text-white"
+          >
+            <h1 className="text-5xl md:text-7xl font-bold mb-6">Our Menu</h1>
+            <p className="text-xl md:text-2xl text-solis-gold max-w-3xl mx-auto">
+              Discover our carefully curated selection of premium coffee and delicious food
+            </p>
+          </motion.div>
+        </div>
       </section>
 
-      <section className="py-12 bg-gradient-to-b from-cream-light to-warm-white">
+      {/* Content */}
+      <section className="py-16 bg-gradient-to-b from-cream-light to-warm-white">
         <div className="container mx-auto px-6">
-          <FadeIn>
-            <div className="flex flex-wrap gap-2 justify-center mb-8">
-              {categories.map((c, i) => (
-                <motion.button key={c.id} onClick={() => setActive(c.id)} whileTap={{ scale: 0.98 }}
-                  className={"px-4 py-2 rounded-full border " + (active===c.id ? "bg-solis-gold text-navy border-solis-gold" : "text-navy border-solis-gold/30 hover:border-solis-gold")}
-                  initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
+          {/* Tabs */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex justify-center mb-12"
+          >
+            <div className="bg-white/80 backdrop-blur-sm warm-shadow border border-solis-gold/20 rounded-full p-1 flex gap-1">
+              {categories.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setActive(c.id)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    active === c.id
+                      ? "bg-solis-gold text-navy"
+                      : "text-navy-light hover:text-navy"
+                  }`}
+                >
                   {c.label}
-                </motion.button>
+                </button>
               ))}
             </div>
-          </FadeIn>
+          </motion.div>
 
+          {/* Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filtered.map((item, idx) => (
-              <FadeIn key={item.id} delay={idx * 0.05}>
-                <motion.div whileHover={{ y: -4 }} className="overflow-hidden border-0 warm-shadow bg-white rounded-xl flex flex-col">
-                  <div className="aspect-square bg-cream overflow-hidden">
-                    {item.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full grid place-items-center solis-gradient"><span className="text-solis-gold text-6xl">☕</span></div>
-                    )}
-                  </div>
-                  <div className="p-6 flex-1 flex flex-col">
+            {filtered.map((item, idx) => {
+              const minPrice =
+                item.sizes && item.sizes.length
+                  ? Math.min(...item.sizes.map((s) => s.price))
+                  : null;
+
+              return (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: idx * 0.05 }}
+                >
+                  <div className="overflow-hidden hover-lift group cursor-pointer border-0 warm-shadow h-full bg-white rounded-xl p-6">
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-bold text-xl text-navy">{item.name}</h3>
-                      <span className="text-xl font-bold text-solis-gold">${item.price.toFixed(2)}</span>
+                      <h3 className="font-bold text-xl text-navy group-hover:text-navy-light transition-colors">
+                        {item.name}
+                      </h3>
+                      <span className="text-sm text-navy-light capitalize">
+                        {item.category}
+                      </span>
                     </div>
-                    <p className="text-gray-600 mb-4 flex-1">{item.description}</p>
-                    <div className="text-sm text-gray-500 capitalize">{item.category}</div>
+
+                    {item.description && (
+                      <p className="text-gray-600 leading-relaxed mb-4">
+                        {item.description}
+                      </p>
+                    )}
+
+                    {/* Sizes */}
+                    {item.sizes?.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {item.sizes
+                          .sort((a, b) => a.size.localeCompare(b.size))
+                          .map((s) => (
+                            <span
+                              key={s.id}
+                              className="inline-flex items-center gap-2 border border-solis-gold/30 text-navy-light rounded-full px-3 py-1 text-sm"
+                            >
+                              <span className="capitalize">{s.size}</span>
+                              <span className="font-semibold text-navy">
+                                ${s.price.toFixed(2)}
+                              </span>
+                            </span>
+                          ))}
+                      </div>
+                    ) : (
+                      <div className="text-gray-500 text-sm">No sizes yet</div>
+                    )}
+
+                    {/* From price */}
+                    <div className="mt-3 text-solis-gold font-bold">
+                      {minPrice !== null
+                        ? `From $${minPrice.toFixed(2)}`
+                        : "Price unavailable"}
+                    </div>
                   </div>
                 </motion.div>
-              </FadeIn>
-            ))}
+              );
+            })}
           </div>
 
-          {filtered.length===0 && (
-            <FadeIn>
-              <div className="text-center py-20">
-                <div className="text-6xl mb-4">☕</div>
-                <h3 className="text-2xl font-bold text-navy mb-2">No items found</h3>
-                <p className="text-gray-600">Try selecting a different category</p>
-              </div>
-            </FadeIn>
+          {!filtered.length && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
+              <div className="text-6xl mb-4">☕</div>
+              <h3 className="text-2xl font-bold text-navy mb-2">No items found</h3>
+              <p className="text-gray-600">Try selecting a different category</p>
+            </motion.div>
           )}
         </div>
       </section>

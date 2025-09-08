@@ -8,27 +8,26 @@ datasource db {
 }
 
 model MenuItem {
-  id          Int       @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   name        String
   description String?
   category    Category
-  price       Float
-  imageUrl    String?
-  isFeatured  Boolean   @default(false)
-  ingredients Json?     // string[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  isFeatured  Boolean     @default(false)
+  ingredients String[]    // Postgres string array; can be empty
+  createdAt   DateTime    @default(now())
+
+  // NEW: relation to MenuSize
+  sizes       MenuSize[]
 }
 
-model ContactForm {
-  id          Int       @id @default(autoincrement())
-  name        String
-  email       String
-  phone       String?
-  subject     String?
-  message     String
-  inquiryType String    @default("general")
-  createdAt   DateTime  @default(now())
+model MenuSize {
+  id         Int        @id @default(autoincrement())
+  menuItem   MenuItem   @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  menuItemId Int
+  size       SizeOption
+  price      Float
+
+  @@unique([menuItemId, size]) // small/large uniqueness per item
 }
 
 enum Category {
@@ -38,4 +37,9 @@ enum Category {
   pastries
   sandwiches
   desserts
+}
+
+enum SizeOption {
+  small
+  large
 }

@@ -2,28 +2,62 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function run() {
-  await prisma.menuItem.createMany({
-    data: [
-      {
-        name: "Signature Espresso",
-        description: "Our premium house blend with a rich, smooth finish.",
-        category: "espresso",
-        price: 3.5,
-        imageUrl: "https://images.unsplash.com/photo-1498804103079-a6351b050096?w=600&h=600&fit=crop",
-        isFeatured: true,
-        ingredients: ["Colombian beans","Dark chocolate notes"] as any
+  // Clear (optional for dev)
+  await prisma.menuSize.deleteMany();
+  await prisma.menuItem.deleteMany();
+
+  // Create examples
+  await prisma.menuItem.create({
+    data: {
+      name: "Flat White",
+      description: "Velvety milk over a rich ristretto shot.",
+      category: "coffee",
+      isFeatured: true,
+      sizes: {
+        create: [
+          { size: "small", price: 4.2 },
+          { size: "large", price: 5.0 },
+        ],
       },
-      {
-        name: "Golden Latte",
-        description: "Smooth espresso with steamed milk and a hint of honey.",
-        category: "coffee",
-        price: 4.25,
-        imageUrl: "https://images.unsplash.com/photo-1521017432531-fbd92d1f0f5e?w=600&h=600&fit=crop",
-        isFeatured: true,
-        ingredients: ["Espresso","Steamed milk","Honey"] as any
-      }
-    ]
+    },
   });
-  console.log("Seeded sample menu items.");
+
+  await prisma.menuItem.create({
+    data: {
+      name: "Americano",
+      description: "Smooth, long espresso with hot water.",
+      category: "espresso",
+      isFeatured: false,
+      sizes: {
+        create: [
+          { size: "small", price: 3.8 },
+          { size: "large", price: 4.5 },
+        ],
+      },
+    },
+  });
+
+  await prisma.menuItem.create({
+    data: {
+      name: "Blueberry Muffin",
+      description: "Baked fresh daily.",
+      category: "pastries",
+      isFeatured: false,
+      sizes: {
+        create: [{ size: "large", price: 4.0 }], // pastries might be single size
+      },
+    },
+  });
 }
-run().finally(()=>prisma.$disconnect());
+
+run()
+  .then(async () => {
+    await prisma.$disconnect();
+    // eslint-disable-next-line no-console
+    console.log("Seeded 👍");
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
