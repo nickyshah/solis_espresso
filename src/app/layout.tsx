@@ -82,10 +82,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div>
                   <h4 className="text-lg font-semibold mb-4 text-solis-gold">Contact</h4>
                   <div className="space-y-2 text-gray-300">
-                    <p>123 Coffee Street</p>
-                    <p>North Sydney, NSW 2060</p>
+                    <p>5675+48 North Sydney</p>
+                  <p>New South Wales 2060, Australia</p>
                     <p>(555) 123-COFFEE</p>
-                    <p>hello@solisespresso.com</p>
+                    <p>info@solisespresso.com</p>
                   </div>
                 </div>
               </div>

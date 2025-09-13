@@ -11,17 +11,20 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   const id = Number(params.id);
   const body = await req.json();
+  
+  // Handle partial updates (e.g., just toggling featured status)
+  const updateData: any = {};
+  
+  if (body.name !== undefined) updateData.name = body.name;
+  if (body.description !== undefined) updateData.description = body.description;
+  if (body.category !== undefined) updateData.category = body.category;
+  if (body.isFeatured !== undefined) updateData.isFeatured = !!body.isFeatured;
+  if (body.ingredients !== undefined) updateData.ingredients = body.ingredients ?? null;
+  
   const updated = await prisma.menuItem.update({
     where: { id },
-    data: {
-      name: body.name,
-      description: body.description,
-      category: body.category,
-      price: Number(body.price),
-      imageUrl: body.imageUrl,
-      isFeatured: !!body.isFeatured,
-      ingredients: body.ingredients ?? null
-    }
+    data: updateData,
+    include: { sizes: true }
   });
   return NextResponse.json(updated);
 }

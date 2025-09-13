@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, Star } from "lucide-react";
 
-type Size = { id: number; size: "small" | "large"; price: number };
+type Size = { id: number; size: "small" | "large" | "single"; price: number };
 type Item = {
   id: number;
   name: string;
@@ -20,7 +20,11 @@ export default function FeaturedMenu() {
   useEffect(() => {
     fetch("/api/menu?featured=1", { cache: "no-store" })
       .then((r) => r.json())
-      .then((data) => setFeatured(Array.isArray(data) ? data.slice(0, 4) : []));
+      .then((data) => {
+        // Handle the API response structure {items, milkUpcharges}
+        const items = data.items || data;
+        setFeatured(Array.isArray(items) ? items.slice(0, 4) : []);
+      });
   }, []);
 
   return (

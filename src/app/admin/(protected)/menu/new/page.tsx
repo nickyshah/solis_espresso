@@ -8,7 +8,7 @@ type SizeRow = { id: string; size: string; price: string };
 
 const CATEGORIES = [
   "coffee",
-  "espresso",
+  "cold-drinks",
   "tea",
   "pastries",
   "sandwiches",

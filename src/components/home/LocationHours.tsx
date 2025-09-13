@@ -14,9 +14,9 @@ export default function LocationHours() {
             </motion.div>
 
             {[
-              { icon: MapPin, title: "Location", text: "123 Coffee Street, North Sydney, NSW 2060" },
+              { icon: MapPin, title: "Location", text: "5675+48 North Sydney, New South Wales 2060" },
               { icon: Clock, title: "Opening Hours", text: "Mon-Fri 7AM-7PM · Sat 8AM-8PM · Sun 8AM-6PM" },
-              { icon: Phone, title: "Contact", text: "(555) 123-COFFEE — hello@solisespresso.com" },
+              { icon: Phone, title: "Contact", text: "(555) 123-COFFEE — info@solisespresso.com" },
             ].map((c, i) => (
               <motion.div key={i} initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.1 * (i+1) }} viewport={{ once: true }}
                 className="hover-lift border-0 warm-shadow bg-white rounded-xl p-6 flex items-center gap-4">

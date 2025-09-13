@@ -60,7 +60,7 @@ export default function ContactPage() {
     {
       icon: MapPin,
       title: "Visit Us",
-      details: ["123 Coffee Street", "Downtown, CA 90210"],
+      details: ["5675+48 North Sydney", "New South Wales 2060, Australia"],
     },
     {
       icon: Clock,
@@ -75,7 +75,7 @@ export default function ContactPage() {
     {
       icon: Mail,
       title: "Email Us",
-      details: ["hello@solisespresso.com", "We respond within 24 hours"],
+      details: ["info@solisespresso.com", "We respond within 24 hours"],
     },
   ];
 
@@ -282,7 +282,7 @@ export default function ContactPage() {
                 ))}
               </div>
 
-              {/* Map Placeholder */}
+              {/* Google Maps */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -290,21 +290,29 @@ export default function ContactPage() {
                 className="mt-8"
               >
                 <Card className="overflow-hidden border-0 warm-shadow">
-                  <div className="aspect-video relative bg-gray-200">
-                    <img
-                      src="https://images.unsplash.com/photo-1572120360610-d971b9d7767c?w=800&h=450&fit=crop"
-                      alt="Map of North Sydney"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-navy/60 flex items-center justify-center">
-                      <div className="text-center text-white p-4">
-                        <MapPin className="w-12 h-12 mx-auto mb-4 text-solis-gold" />
-                        <h3 className="text-xl font-bold mb-2">Find Us in North Sydney</h3>
-                        <p className="text-gray-200">123 Coffee Street, NSW 2060</p>
-                        <Button variant="outline" className="mt-4 border-white text-white transform transition-transform duration-300 hover:scale-[1.1] hover:text-navy">
-                          Get Directions
-                        </Button>
+                  <div className="aspect-video relative">
+                    <iframe
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3312.5234567890123!2d151.2073!3d-33.8362!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b12af5e7b1234567%3A0x1234567890abcdef!2s5675%2B48%20North%20Sydney%20NSW%2C%20Australia!5e0!3m2!1sen!2sau!4v1234567890123!5m2!1sen!2sau"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title="Solis Espresso Location"
+                    ></iframe>
+                    <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-xs">
+                      <div className="flex items-center gap-2 mb-2">
+                        <MapPin className="w-5 h-5 text-solis-gold" />
+                        <h3 className="font-bold text-navy">Solis Espresso</h3>
                       </div>
+                      <p className="text-sm text-gray-600 mb-3">5675+48 North Sydney, New South Wales 2060</p>
+                      <Button 
+                        onClick={() => window.open('https://www.google.com/maps/dir/?api=1&destination=5675%2B48+North+Sydney%2C+New+South+Wales+2060%2C+Australia', '_blank')}
+                        className="w-full bg-solis-gold hover:bg-solis-gold/90 text-navy font-semibold"
+                      >
+                        Get Directions
+                      </Button>
                     </div>
                   </div>
                 </Card>

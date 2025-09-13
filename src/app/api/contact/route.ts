@@ -26,8 +26,8 @@ export async function POST(req: Request) {
         auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
       });
 
-      const from = process.env.SMTP_FROM || "hello@solis.com.au";
-      const toCafe = process.env.CONTACT_EMAIL || "hello@solis.com.au";
+      const from = process.env.SMTP_FROM || "info@solisespresso.com";
+  const toCafe = process.env.CONTACT_EMAIL || "info@solisespresso.com";
 
       // 📩 Email 1 → Notification to café
       await transporter.sendMail({
@@ -87,7 +87,7 @@ export async function POST(req: Request) {
                   <img src="https://cdn-icons-png.flaticon.com/512/5968/5968830.png" alt="X" width="28" />
                 </a>
               </div>
-              <p>Warm regards,<br/>The Solis Espresso Team<br/><a href="mailto:hello@solis.com.au">hello@solis.com.au</a></p>
+              <p>Warm regards,<br/>The Solis Espresso Team<br/><a href="mailto:info@solisespresso.com">info@solisespresso.com</a></p>
             </div>
           </div>
         `,

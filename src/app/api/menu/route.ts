@@ -8,11 +8,15 @@ export async function GET(req: Request) {
 
   const items = await prisma.menuItem.findMany({
     where,
-    orderBy: { createdAt: "desc" },
-    include: { sizes: { orderBy: { size: "asc" } } },
+    include: { sizes: true },
   });
-
-  return NextResponse.json(items);
+  
+  // Get milk upcharges using raw SQL
+  const milkUpcharges = await prisma.$queryRaw`
+    SELECT * FROM "MilkUpcharge" ORDER BY "milkType"
+  `;
+  
+  return Response.json({ items, milkUpcharges });
 }
 
 /**
@@ -20,7 +24,7 @@ export async function GET(req: Request) {
  * {
  *   name: string,
  *   description?: string,
- *   category: "coffee"|"espresso"|...,
+ *   category: "coffee"|"cold-drinks"|...,
  *   isFeatured?: boolean,
  *   ingredients?: string[],
  *   sizes: [{ size: "small"|"large", price: number }, ...]

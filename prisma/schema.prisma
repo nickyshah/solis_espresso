@@ -15,6 +15,7 @@ model MenuItem {
   isFeatured  Boolean     @default(false)
   ingredients String[]    // Postgres string array; can be empty
   createdAt   DateTime    @default(now())
+  hasMilk     Boolean     @default(false) // Whether item can have milk options
 
   // NEW: relation to MenuSize
   sizes       MenuSize[]
@@ -32,7 +33,7 @@ model MenuSize {
 
 enum Category {
   coffee
-  espresso
+  cold_drinks
   tea
   pastries
   sandwiches
@@ -42,4 +43,33 @@ enum Category {
 enum SizeOption {
   small
   large
+  single  // For food items that don't have sizes
+}
+
+enum MilkOption {
+  regular
+  oat
+  almond
+  soy
+}
+
+// Milk upcharge pricing
+model MilkUpcharge {
+  id          Int        @id @default(autoincrement())
+  milkType    MilkOption
+  upcharge    Float      // Additional cost for non-dairy milk
+  
+  @@unique([milkType])
+}
+
+// Contact form submissions
+model ContactForm {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String
+  phone       String?
+  subject     String?
+  message     String
+  inquiryType String   @default("general")
+  createdAt   DateTime @default(now())
 }
