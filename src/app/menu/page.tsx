@@ -225,12 +225,9 @@ export default function MenuPage() {
                               <div className="text-xs font-medium text-navy-light mb-2">Milk Options</div>
                               <div className="grid grid-cols-2 gap-1 text-xs">
                                 {milkUpcharges.map((milk) => (
-                                  <div key={milk.id} className="flex justify-between items-center py-1">
+                                  <div key={milk.id} className="py-1">
                                     <span className="capitalize text-gray-600">
-                                      {milk.milkType === 'regular' ? 'Dairy' : milk.milkType}
-                                    </span>
-                                    <span className="text-navy font-medium">
-                                      {milk.upcharge === 0 ? 'Included' : `+$${milk.upcharge.toFixed(2)}`}
+                                      {milk.milkType === 'regular' ? 'Dairy' : milk.milkType}-${milk.upcharge === 0 ? '0.00' : milk.upcharge.toFixed(2)}
                                     </span>
                                   </div>
                                 ))}

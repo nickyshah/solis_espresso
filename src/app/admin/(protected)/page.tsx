@@ -43,7 +43,7 @@ const emptyFood: Item = {
   hasSizes: false,
   ingredients: [],
   sizes: [
-    { size: "Single", price: 0 },
+    { size: "", price: 0 },
   ],
   milkOptions: [],
 };
@@ -141,7 +141,7 @@ export default function AdminPage() {
       ...form,
       category,
       hasSizes: !isFoodItem,
-      sizes: isFoodItem ? [{ size: "Single", price: 0 }] : [{ size: "Small", price: 0 }, { size: "Large", price: 0 }]
+      sizes: isFoodItem ? [{ size: "", price: 0 }] : [{ size: "Small", price: 0 }, { size: "Large", price: 0 }]
     };
     setForm(newForm);
   }
@@ -151,8 +151,11 @@ export default function AdminPage() {
   async function submit() {
     setLoading(true);
     try {
-      const response = await fetch("/api/menu", {
-        method: "POST",
+      const method = editingItem ? "PUT" : "POST";
+      const url = editingItem ? `/api/menu/${editingItem.id}` : "/api/menu";
+      
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
@@ -164,11 +167,45 @@ export default function AdminPage() {
       
       await refresh();
       setForm(isFoodCategory ? emptyFood : empty);
+      setEditingItem(null);
     } catch (error) {
       console.error('Failed to save item:', error);
       alert('Failed to save item. Please try again.');
     } finally {
       setLoading(false);
+    }
+  }
+
+  function editItem(item: Item) {
+    setForm({
+      ...item,
+      milkOptions: item.milkOptions || [],
+      hasSizes: item.sizes.length > 1 || (item.sizes.length === 1 && item.sizes[0].size !== "Single")
+    });
+    setEditingItem(item);
+  }
+
+  function cancelEdit() {
+    setForm(empty);
+    setEditingItem(null);
+  }
+
+  async function deleteItem(itemId: number) {
+    if (!confirm('Are you sure you want to delete this item?')) return;
+    
+    try {
+      const response = await fetch(`/api/menu/${itemId}`, {
+        method: "DELETE",
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete item');
+      }
+      
+      await refresh();
+    } catch (error) {
+      console.error('Failed to delete item:', error);
+      alert('Failed to delete item. Please try again.');
     }
   }
 
@@ -185,7 +222,19 @@ export default function AdminPage() {
       <div className="space-y-8">
         {/* Form */}
         <div className="bg-white rounded-xl p-6 warm-shadow">
-          <h2 className="text-lg font-bold text-navy mb-4">Add New Item</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-navy">
+              {editingItem ? 'Edit Item' : 'Add New Item'}
+            </h2>
+            {editingItem && (
+              <button
+                onClick={cancelEdit}
+                className="text-sm text-gray-600 hover:text-gray-800"
+              >
+                Cancel Edit
+              </button>
+            )}
+          </div>
           <div className="grid lg:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
@@ -241,6 +290,18 @@ export default function AdminPage() {
 
               <div className="flex items-center gap-2">
                 <input
+                  id="hasSizes"
+                  type="checkbox"
+                  checked={form.hasSizes}
+                  onChange={(e) => setForm({ ...form, hasSizes: e.target.checked })}
+                />
+                <label htmlFor="hasSizes" className="text-sm text-navy">
+                  Has Size Options
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
                   id="hasMilk"
                   type="checkbox"
                   checked={form.hasMilk}
@@ -251,39 +312,106 @@ export default function AdminPage() {
                 </label>
               </div>
 
-              {/* Sizes */}
-              {isFoodCategory ? (
+              {/* Dynamic Sizes */}
+              {form.hasSizes ? (
                 <div>
-                  <label className="block text-sm font-medium text-navy mb-1">Price</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-navy">Size Options</label>
+                    <button
+                      type="button"
+                      onClick={addSize}
+                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Size
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {form.sizes.map((size, index) => (
+                      <div key={index} className="flex gap-2 items-center">
+                        <input
+                          type="text"
+                          placeholder="Size name (e.g., Small, Large)"
+                          value={size.size}
+                          onChange={(e) => updateSize(index, 'size', e.target.value)}
+                          className="flex-1 border rounded-md px-3 py-2"
+                        />
+                        <input
+                          type="number"
+                          step="0.01"
+                          placeholder="Price"
+                          value={size.price}
+                          onChange={(e) => updateSize(index, 'price', e.target.value)}
+                          className="w-24 border rounded-md px-3 py-2"
+                        />
+                        {form.sizes.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeSize(index)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-navy mb-2">Price</label>
                   <input
                     type="number"
                     step="0.01"
-                    value={form.sizes.find((s) => s.size === "single")?.price ?? 0}
-                    onChange={(e) => setPrice("single", e.target.value)}
+                    placeholder="Enter price"
+                    value={form.sizes[0]?.price || 0}
+                    onChange={(e) => updateSize(0, 'price', e.target.value)}
                     className="w-full border rounded-md px-3 py-2"
                   />
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-navy mb-1">Small price</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={form.sizes.find((s) => s.size === "small")?.price ?? 0}
-                      onChange={(e) => setPrice("small", e.target.value)}
-                      className="w-full border rounded-md px-3 py-2"
-                    />
+              )}
+
+              {/* Dynamic Milk Options */}
+              {form.hasMilk && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-navy">Milk Options</label>
+                    <button
+                      type="button"
+                      onClick={addMilkOption}
+                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Milk Option
+                    </button>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-navy mb-1">Large price</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={form.sizes.find((s) => s.size === "large")?.price ?? 0}
-                      onChange={(e) => setPrice("large", e.target.value)}
-                      className="w-full border rounded-md px-3 py-2"
-                    />
+                  <div className="space-y-2">
+                    {form.milkOptions.map((milk, index) => (
+                      <div key={index} className="flex gap-2 items-center">
+                        <input
+                          type="text"
+                          placeholder="Milk name (e.g., Oat, Almond)"
+                          value={milk.name}
+                          onChange={(e) => updateMilkOption(index, 'name', e.target.value)}
+                          className="flex-1 border rounded-md px-3 py-2"
+                        />
+                        <input
+                          type="number"
+                          step="0.01"
+                          placeholder="Extra price"
+                          value={milk.price}
+                          onChange={(e) => updateMilkOption(index, 'price', e.target.value)}
+                          className="w-24 border rounded-md px-3 py-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeMilkOption(index)}
+                          className="text-red-600 hover:text-red-800 p-1"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -293,7 +421,7 @@ export default function AdminPage() {
                 disabled={loading || !form.name || !form.category}
                 className="inline-flex items-center justify-center px-5 py-3 rounded-md solis-gradient text-white font-semibold hover:opacity-90 w-full"
               >
-                {loading ? "Saving..." : "Save Item"}
+                {loading ? "Saving..." : editingItem ? "Update Item" : "Save Item"}
               </button>
             </div>
           </div>
@@ -304,40 +432,74 @@ export default function AdminPage() {
           <h2 className="text-lg font-bold text-navy mb-4">Current Items</h2>
           <div className="space-y-3">
             {items.map((it) => {
-              const small = it.sizes.find((s) => s.size === "small");
-              const large = it.sizes.find((s) => s.size === "large");
-              const single = it.sizes.find((s) => s.size === "single");
               return (
-                <div key={it.id} className="border rounded-md p-4 relative">
-                  {/* Featured Star Icon */}
-                  <button
-                    onClick={() => toggleFeatured(it.id!, it.isFeatured)}
-                    className="absolute top-3 right-3 p-1 rounded-full hover:bg-gray-100 transition-colors"
-                    title={it.isFeatured ? "Remove from featured" : "Add to featured"}
-                  >
-                    <Star
-                      className={`w-5 h-5 transition-colors ${
-                        it.isFeatured
-                          ? "text-yellow-500 fill-yellow-500"
-                          : "text-gray-400 hover:text-gray-600"
-                      }`}
-                    />
-                  </button>
-                  
-                  <div className="flex items-center justify-between pr-8">
-                    <div>
+                <div key={it.id} className="border rounded-md p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
                       <div className="font-semibold text-navy">{it.name}</div>
-                      <div className="text-navy-light text-sm capitalize">{it.category}</div>
+                      <div className="text-navy-light text-sm capitalize">{it.category.replace('_', ' ')}</div>
+                      {it.description && (
+                        <div className="text-gray-600 text-sm mt-1">{it.description}</div>
+                      )}
+                      <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                        {it.hasMilk && <span>Has Milk Options</span>}
+                        {it.sizes.length > 1 && <span>Multiple Sizes</span>}
+                      </div>
                     </div>
-                    <div className="text-sm text-navy flex gap-3">
-                      {single && <span>${single.price.toFixed(2)}</span>}
-                      {small && <span>Small ${small.price.toFixed(2)}</span>}
-                      {large && <span>Large ${large.price.toFixed(2)}</span>}
+                    
+                    <div className="flex items-start gap-4">
+                      {/* Price section */}
+                      <div className="text-sm text-navy min-w-0">
+                        <div className="text-right">
+                          {it.sizes.map((size, idx) => (
+                            <div key={idx} className="mb-1 whitespace-nowrap">
+                              {size.size && <span className="font-medium">{size.size} </span>}
+                              <span className="font-semibold">${size.price.toFixed(2)}</span>
+                            </div>
+                          ))}
+                        </div>
+                        {it.milkOptions && it.milkOptions.length > 0 && (
+                          <div className="text-xs text-gray-500 mt-2 text-right">
+                            <div className="font-medium mb-1">Milk Options:</div>
+                            {it.milkOptions.map((m, idx) => (
+                              <div key={idx}>{m.name} (+${m.price.toFixed(2)})</div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Action buttons */}
+                      <div className="flex flex-col gap-1 ml-2">
+                        <button
+                          onClick={() => toggleFeatured(it.id!, it.isFeatured)}
+                          className="p-2 rounded-md hover:bg-gray-100 transition-colors border border-gray-200"
+                          title={it.isFeatured ? "Remove from featured" : "Add to featured"}
+                        >
+                          <Star
+                            className={`w-4 h-4 transition-colors ${
+                              it.isFeatured
+                                ? "text-yellow-500 fill-yellow-500"
+                                : "text-gray-400 hover:text-gray-600"
+                            }`}
+                          />
+                        </button>
+                        <button
+                          onClick={() => editItem(it)}
+                          className="p-2 rounded-md hover:bg-blue-50 transition-colors text-blue-600 hover:text-blue-800 border border-blue-200"
+                          title="Edit item"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteItem(it.id!)}
+                          className="p-2 rounded-md hover:bg-red-50 transition-colors text-red-600 hover:text-red-800 border border-red-200"
+                          title="Delete item"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  {it.description && (
-                    <div className="text-gray-600 text-sm mt-2">{it.description}</div>
-                  )}
                 </div>
               );
             })}

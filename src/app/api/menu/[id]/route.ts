@@ -19,14 +19,49 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   if (body.description !== undefined) updateData.description = body.description;
   if (body.category !== undefined) updateData.category = body.category;
   if (body.isFeatured !== undefined) updateData.isFeatured = !!body.isFeatured;
+  if (body.hasMilk !== undefined) updateData.hasMilk = !!body.hasMilk;
   if (body.ingredients !== undefined) updateData.ingredients = body.ingredients ?? null;
+  
+  // Handle sizes update if provided
+  if (body.sizes && Array.isArray(body.sizes)) {
+    // Convert size names to enum values for database
+    const sizesData = body.sizes.map((s: any) => {
+      let sizeEnum = 'single';
+      const sizeName = (s.size === '' || !s.size) ? 'single' : s.size.toLowerCase();
+      if (sizeName.includes('small')) sizeEnum = 'small';
+      else if (sizeName.includes('large')) sizeEnum = 'large';
+      
+      return {
+        size: sizeEnum as 'small' | 'large' | 'single',
+        price: Number(s.price),
+      };
+    });
+    
+    // Delete existing sizes and create new ones
+    await prisma.menuSize.deleteMany({ where: { menuItemId: id } });
+    updateData.sizes = {
+      create: sizesData,
+    };
+  }
   
   const updated = await prisma.menuItem.update({
     where: { id },
     data: updateData,
     include: { sizes: true }
   });
-  return NextResponse.json(updated);
+  
+  // Return with original size names and milk options if provided
+  const updatedWithCustomData = {
+    ...updated,
+    sizes: body.sizes || updated.sizes.map(size => ({
+      ...size,
+      size: size.size === 'small' ? 'Small' : 
+            size.size === 'large' ? 'Large' : ''
+    })),
+    milkOptions: body.milkOptions || [],
+  };
+  
+  return NextResponse.json(updatedWithCustomData);
 }
 
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
