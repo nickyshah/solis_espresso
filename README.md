@@ -1,13 +1,13 @@
-# Solis Espresso — Next.js (src/app) + Prisma (Postgres) + NextAuth + Vercel Blob
+# Solis Espresso — Next.js (src/app) + Prisma (Postgres) + NextAuth
 
-Public site with a private admin backend to manage the cafe menu. Uses **Postgres** (local dev & Vercel Postgres) and **Vercel Blob** for image uploads.
+Public site with a private admin backend to manage the cafe menu. Uses **Postgres** (local dev & Vercel Postgres).
 
 ## Stack
 - Next.js 14 (App Router, TypeScript, Tailwind)
 - Prisma + **Postgres** (Category enum + JSON ingredients)
 - NextAuth (Credentials) — admin-only access
 - REST API routes for Menu CRUD, Contact form
-- **Vercel Blob** image uploads via `/api/upload`
+
 - Framer Motion animations aligned with your Base44 UI
 
 ## Local Dev
@@ -36,10 +36,10 @@ npm run dev
 - `PUT /api/menu/:id` — update (**admin only**)
 - `DELETE /api/menu/:id` — delete (**admin only**)
 - `POST /api/contact` — save inquiry (+ optional emails)
-- `POST /api/upload` — upload image to Vercel Blob (returns `{ url }`)
+
 
 ## Notes
-- Admin UI lets you upload an image (stored in Blob) or paste a URL.
+- Admin UI for managing menu items and categories.
 - Ingredients are **string[]** via Prisma JSON.
 - Category is a Prisma **enum**.
 

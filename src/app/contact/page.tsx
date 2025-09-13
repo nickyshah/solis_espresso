@@ -60,12 +60,12 @@ export default function ContactPage() {
     {
       icon: MapPin,
       title: "Visit Us",
-      details: ["5675+48 North Sydney", "New South Wales 2060, Australia"],
+      details: ["Shop 2, 77 Berry Street", "North Sydney NSW 2060 Australia"],
     },
     {
       icon: Clock,
       title: "Hours",
-      details: ["Mon-Fri: 7AM - 7PM", "Sat: 8AM - 8PM", "Sun: 8AM - 6PM"],
+      details: ["Mon-Fri: 6AM - 3:30PM", "Sat-Sun: Closed"],
     },
     {
       icon: Phone,
@@ -292,7 +292,7 @@ export default function ContactPage() {
                 <Card className="overflow-hidden border-0 warm-shadow">
                   <div className="aspect-video relative">
                     <iframe
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3312.5234567890123!2d151.2073!3d-33.8362!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6b12af5e7b1234567%3A0x1234567890abcdef!2s5675%2B48%20North%20Sydney%20NSW%2C%20Australia!5e0!3m2!1sen!2sau!4v1234567890123!5m2!1sen!2sau"
+                      src="https://maps.google.com/maps?q=Shop%202,%2077%20Berry%20Street,%20North%20Sydney%20NSW%202060,%20Australia&t=&z=15&ie=UTF8&iwloc=&output=embed"
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}
@@ -300,16 +300,18 @@ export default function ContactPage() {
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
                       title="Solis Espresso Location"
+                      className="absolute inset-0"
                     ></iframe>
-                    <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-xs">
-                      <div className="flex items-center gap-2 mb-2">
-                        <MapPin className="w-5 h-5 text-solis-gold" />
-                        <h3 className="font-bold text-navy">Solis Espresso</h3>
+                    <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg">
+                      <div className="flex items-center gap-2 mb-1">
+                        <MapPin className="w-4 h-4 text-solis-gold" />
+                        <h3 className="font-bold text-navy text-sm">Solis Espresso</h3>
                       </div>
-                      <p className="text-sm text-gray-600 mb-3">5675+48 North Sydney, New South Wales 2060</p>
+                      <p className="text-xs text-gray-600">Shop 2, 77 Berry Street<br />North Sydney NSW 2060</p>
                       <Button 
-                        onClick={() => window.open('https://www.google.com/maps/dir/?api=1&destination=5675%2B48+North+Sydney%2C+New+South+Wales+2060%2C+Australia', '_blank')}
-                        className="w-full bg-solis-gold hover:bg-solis-gold/90 text-navy font-semibold"
+                        onClick={() => window.open('https://www.google.com/maps/dir/?api=1&destination=Shop%202,%2077%20Berry%20Street,%20North%20Sydney%20NSW%202060,%20Australia', '_blank')}
+                        className="bg-solis-gold hover:bg-solis-gold/90 text-navy font-semibold text-xs px-3 py-1 mt-2 h-auto"
+                        size="sm"
                       >
                         Get Directions
                       </Button>

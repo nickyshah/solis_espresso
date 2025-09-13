@@ -74,7 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div>
                   <h4 className="text-lg font-semibold mb-4 text-solis-gold">Opening Hours</h4>
                   <div className="space-y-2 text-gray-300">
-                    <div className="flex justify-between"><span>Monday - Friday</span><span>7AM - 7PM</span></div>
+                    <div className="flex justify-between"><span>Monday - Friday</span><span>6AM - 3:30PM</span></div>
                     <div className="flex justify-between"><span>Saturday - Sunday</span><span>Closed</span></div>
                   </div>
                 </div>
@@ -82,8 +82,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <div>
                   <h4 className="text-lg font-semibold mb-4 text-solis-gold">Contact</h4>
                   <div className="space-y-2 text-gray-300">
-                    <p>5675+48 North Sydney</p>
-                  <p>New South Wales 2060, Australia</p>
+                    <p>Shop 2, 77 Berry Street</p>
+                  <p>North Sydney, NSW 2060, Australia</p>
                     <p>(555) 123-COFFEE</p>
                     <p>info@solisespresso.com</p>
                   </div>

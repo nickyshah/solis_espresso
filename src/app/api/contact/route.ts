@@ -1,23 +1,84 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import nodemailer from "nodemailer";
+import { contactRateLimiter, withRateLimit } from "@/lib/rate-limiter";
 
-export async function POST(req: Request) {
-  const body = await req.json();
+// Input validation and sanitization functions
+function sanitizeString(input: string): string {
+  return input.trim().replace(/<script[^>]*>.*?<\/script>/gi, '').replace(/<[^>]*>/g, '');
+}
 
-  // Save submission in DB
-  const saved = await prisma.contactForm.create({
-    data: {
-      name: body.name,
-      email: body.email,
-      phone: body.phone ?? null,
-      subject: body.subject ?? null,
-      message: body.message,
-      inquiryType: body.inquiry_type ?? "general",
-    },
-  });
+function validateEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
 
+function validatePhone(phone: string): boolean {
+  const phoneRegex = /^[\+]?[1-9][\d\s\-\(\)]{7,15}$/;
+  return phoneRegex.test(phone);
+}
+
+async function handlePOST(req: Request) {
   try {
+    const body = await req.json();
+    
+    // Validate required fields
+    if (!body.name || !body.email || !body.message) {
+      return NextResponse.json(
+        { error: "Name, email, and message are required" },
+        { status: 400 }
+      );
+    }
+    
+    // Validate field lengths
+    if (body.name.length > 100 || body.email.length > 255 || body.message.length > 2000) {
+      return NextResponse.json(
+        { error: "Input exceeds maximum length" },
+        { status: 400 }
+      );
+    }
+    
+    // Validate email format
+    if (!validateEmail(body.email)) {
+      return NextResponse.json(
+        { error: "Invalid email format" },
+        { status: 400 }
+      );
+    }
+    
+    // Validate phone if provided
+    if (body.phone && !validatePhone(body.phone)) {
+      return NextResponse.json(
+        { error: "Invalid phone format" },
+        { status: 400 }
+      );
+    }
+    
+    // Sanitize inputs
+    const sanitizedData = {
+      name: sanitizeString(body.name),
+      email: sanitizeString(body.email.toLowerCase()),
+      phone: body.phone ? sanitizeString(body.phone) : null,
+      subject: body.subject ? sanitizeString(body.subject) : null,
+      message: sanitizeString(body.message),
+      inquiry_type: body.inquiry_type && ['general', 'catering', 'events', 'feedback'].includes(body.inquiry_type) 
+        ? body.inquiry_type : 'general'
+    };
+
+    // Save submission in DB
+    const saved = await prisma.contactForm.create({
+      data: {
+        name: sanitizedData.name,
+        email: sanitizedData.email,
+        phone: sanitizedData.phone,
+        subject: sanitizedData.subject,
+        message: sanitizedData.message,
+        inquiryType: sanitizedData.inquiry_type,
+      },
+    });
+
+    // Send emails
+    try {
     if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
       const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
@@ -33,21 +94,21 @@ export async function POST(req: Request) {
       await transporter.sendMail({
         from,
         to: toCafe,
-        replyTo: body.email,
-        subject: `New Contact Form: ${body.subject || body.inquiry_type || "General"}`,
+        replyTo: sanitizedData.email,
+        subject: `New Contact Form: ${sanitizedData.subject || sanitizedData.inquiry_type || "General"}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; background: #fffaf5; border: 1px solid #f4b942; border-radius: 12px; overflow: hidden;">
             <div style="background: linear-gradient(135deg, #2B3A4D, #3B4A5D); padding: 16px; text-align: center;">
               <h2 style="color: #F4B942; margin: 0;">📬 New Contact Form Submission</h2>
             </div>
             <div style="padding: 20px; color: #2B3A4D; font-size: 15px;">
-              <p><strong>Name:</strong> ${body.name}</p>
-              <p><strong>Email:</strong> ${body.email}</p>
-              <p><strong>Phone:</strong> ${body.phone || "Not provided"}</p>
-              <p><strong>Inquiry Type:</strong> ${body.inquiry_type || "General"}</p>
-              <p><strong>Subject:</strong> ${body.subject || "Not provided"}</p>
+              <p><strong>Name:</strong> ${sanitizedData.name}</p>
+              <p><strong>Email:</strong> ${sanitizedData.email}</p>
+              <p><strong>Phone:</strong> ${sanitizedData.phone || "Not provided"}</p>
+              <p><strong>Inquiry Type:</strong> ${sanitizedData.inquiry_type || "General"}</p>
+              <p><strong>Subject:</strong> ${sanitizedData.subject || "Not provided"}</p>
               <hr style="margin: 16px 0; border: none; border-top: 1px solid #eee;" />
-              <p style="white-space: pre-line;">${body.message}</p>
+              <p style="white-space: pre-line;">${sanitizedData.message}</p>
             </div>
           </div>
         `,
@@ -56,7 +117,7 @@ export async function POST(req: Request) {
       // 📩 Email 2 → Auto-reply to customer
       await transporter.sendMail({
         from: toCafe,
-        to: body.email,
+        to: sanitizedData.email,
         replyTo: toCafe,
         subject: "Thank you for contacting Solis Espresso ☕",
         html: `
@@ -66,14 +127,14 @@ export async function POST(req: Request) {
               <p style="color: #ffffff; margin: 4px 0 0;">Artisanal Coffee • North Sydney</p>
             </div>
             <div style="padding: 24px; color: #2B3A4D; font-size: 16px; line-height: 1.6;">
-              <p>Hi <strong>${body.name}</strong>,</p>
+              <p>Hi <strong>${sanitizedData.name}</strong>,</p>
               <p>Thanks for reaching out to <strong>Solis Espresso</strong>! ☕<br/>
               We've received your message and one of our team members will get back to you within <strong>24 hours</strong>.</p>
               <p>In the meantime, we’d love to see you at our café:</p>
               <div style="background: #faf6f0; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #f4b942;">
-                <p style="margin: 4px 0;">📍 123 Coffee Street, North Sydney, NSW 2060</p>
+                <p style="margin: 4px 0;">📍 Shop 2, 77 Berry Street, North Sydney NSW 2060 Australia</p>
                 <p style="margin: 4px 0;">📞 (555) 123-COFFEE</p>
-                <p style="margin: 4px 0;">⏰ Mon–Fri: 7AM–7PM, Sat: 8AM–8PM, Sun: 8AM–6PM</p>
+                <p style="margin: 4px 0;">⏰ Mon–Fri: 6AM–3:30PM, Sat–Sun: Closed</p>
               </div>
               <p style="margin: 16px 0;">Follow us on social media:</p>
               <div style="text-align: center; margin-bottom: 24px;">
@@ -97,5 +158,15 @@ export async function POST(req: Request) {
     console.error("Email error", e);
   }
 
-  return NextResponse.json({ ok: true, id: saved.id });
+    return NextResponse.json({ ok: true, id: saved.id });
+  } catch (error) {
+    console.error('Contact form error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 }
+
+// Apply rate limiting to the POST handler
+export const POST = withRateLimit(contactRateLimiter, handlePOST);

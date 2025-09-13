@@ -66,9 +66,7 @@ export default function AboutPage() {
               </h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  Solis Espresso began as a dream in 2018, born from Maria and Carlos&apos;s shared passion
-                  for extraordinary coffee and genuine human connection. After traveling the world and
-                  experiencing coffee cultures from Ethiopia to Colombia, they returned home with a vision.
+                  Solis Espresso began as a dream in 2025, sparked by Chris and Sebastian’s shared passion for extraordinary coffee and genuine human connection. After traveling the world and experiencing coffee cultures from Ethiopia to Colombia, they returned home with a clear vision.
                 </p>
                 <p>
                   What started as a small neighborhood cafe has grown into a beloved community hub,
