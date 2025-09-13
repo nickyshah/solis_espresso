@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { Star, Edit2, Trash2, Plus, X } from "lucide-react";
 
-type Size = { id?: number; size: "small" | "large" | "single"; price: number };
+type Size = { id?: number; size: string; price: number };
+type MilkOption = { id?: number; name: string; price: number };
 type Item = {
   id?: number;
   name: string;
@@ -12,8 +13,10 @@ type Item = {
   category: "coffee" | "cold-drinks" | "tea" | "pastries" | "sandwiches" | "desserts";
   isFeatured: boolean;
   hasMilk: boolean;
+  hasSizes: boolean;
   ingredients?: string[];
   sizes: Size[];
+  milkOptions: MilkOption[];
 };
 
 const empty: Item = {
@@ -22,11 +25,13 @@ const empty: Item = {
   category: "coffee",
   isFeatured: false,
   hasMilk: false,
+  hasSizes: true,
   ingredients: [],
   sizes: [
-    { size: "small", price: 0 },
-    { size: "large", price: 0 },
+    { size: "Small", price: 0 },
+    { size: "Large", price: 0 },
   ],
+  milkOptions: [],
 };
 
 const emptyFood: Item = {
@@ -35,16 +40,19 @@ const emptyFood: Item = {
   category: "pastries",
   isFeatured: false,
   hasMilk: false,
+  hasSizes: false,
   ingredients: [],
   sizes: [
-    { size: "single", price: 0 },
+    { size: "Single", price: 0 },
   ],
+  milkOptions: [],
 };
 
 export default function AdminPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [form, setForm] = useState<Item>(empty);
   const [loading, setLoading] = useState(false);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
 
   useEffect(() => {
     refresh();
@@ -75,15 +83,56 @@ export default function AdminPage() {
     }
   }
 
-  function setPrice(size: "small" | "large" | "single", value: string) {
-    const num = Number(value || 0);
-    setForm((f) => {
-      const next = { ...f };
-      const idx = next.sizes.findIndex((s) => s.size === size);
-      if (idx >= 0) next.sizes[idx] = { ...next.sizes[idx], price: isNaN(num) ? 0 : num };
-      else next.sizes.push({ size, price: isNaN(num) ? 0 : num });
-      return next;
+  function addSize() {
+    setForm(f => ({
+      ...f,
+      sizes: [...f.sizes, { size: "", price: 0 }]
+    }));
+  }
+
+  function updateSize(index: number, field: 'size' | 'price', value: string | number) {
+    setForm(f => {
+      const newSizes = [...f.sizes];
+      if (field === 'price') {
+        newSizes[index] = { ...newSizes[index], price: Number(value) || 0 };
+      } else {
+        newSizes[index] = { ...newSizes[index], size: value as string };
+      }
+      return { ...f, sizes: newSizes };
     });
+  }
+
+  function removeSize(index: number) {
+    setForm(f => ({
+      ...f,
+      sizes: f.sizes.filter((_, i) => i !== index)
+    }));
+  }
+
+  function addMilkOption() {
+    setForm(f => ({
+      ...f,
+      milkOptions: [...f.milkOptions, { name: "", price: 0 }]
+    }));
+  }
+
+  function updateMilkOption(index: number, field: 'name' | 'price', value: string | number) {
+    setForm(f => {
+      const newMilkOptions = [...f.milkOptions];
+      if (field === 'price') {
+        newMilkOptions[index] = { ...newMilkOptions[index], price: Number(value) || 0 };
+      } else {
+        newMilkOptions[index] = { ...newMilkOptions[index], name: value as string };
+      }
+      return { ...f, milkOptions: newMilkOptions };
+    });
+  }
+
+  function removeMilkOption(index: number) {
+    setForm(f => ({
+      ...f,
+      milkOptions: f.milkOptions.filter((_, i) => i !== index)
+    }));
   }
 
   function onCategoryChange(category: Item["category"]) {
@@ -91,7 +140,8 @@ export default function AdminPage() {
     const newForm = {
       ...form,
       category,
-      sizes: isFoodItem ? [{ size: "single" as const, price: 0 }] : [{ size: "small" as const, price: 0 }, { size: "large" as const, price: 0 }]
+      hasSizes: !isFoodItem,
+      sizes: isFoodItem ? [{ size: "Single", price: 0 }] : [{ size: "Small", price: 0 }, { size: "Large", price: 0 }]
     };
     setForm(newForm);
   }

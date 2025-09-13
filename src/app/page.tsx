@@ -18,7 +18,7 @@ export default function HomePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/menu" className="px-6 py-3 rounded-lg bg-solis-gold text-navy font-semibold hover-lift">View Our Menu</a>
-            <a href="/contact" className="px-6 py-3 rounded-lg border border-white text-white hover:bg-white hover:text-navy hover-lift">Visit Us Today</a>
+            <a href="/contact" className="px-6 py-3 rounded-lg border border-white text-white hover:text-navy hover-lift">Visit Us Today</a>
           </div>
         </div>
       </section>

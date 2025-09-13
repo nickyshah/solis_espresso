@@ -15,7 +15,7 @@ export const { auth, handlers } = NextAuth({
         const adminEmail = (process.env.ADMIN_EMAIL || "").toLowerCase();
         const adminPass = process.env.ADMIN_PASSWORD || "";
 
-        const emailOk = (creds?.email?.toLowerCase?.() || "") === adminEmail;
+        const emailOk = (typeof creds?.email === 'string' ? creds.email.toLowerCase() : "") === adminEmail;
         const passOk = (creds?.password || "") === adminPass;
 
         if (!emailOk || !passOk) return null;
