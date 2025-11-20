@@ -73,3 +73,23 @@ model ContactForm {
   inquiryType String   @default("general")
   createdAt   DateTime @default(now())
 }
+
+// Social media links for footer
+model SocialLink {
+  id        Int      @id @default(autoincrement())
+  platform  String   @unique // e.g., "instagram", "facebook", "twitter"
+  url       String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Our Story content for the about page
+model Story {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String   // Main story paragraphs (can be multiline)
+  imageUrl    String?  // Optional image URL
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

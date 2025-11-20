@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Star, Edit2, Trash2, Plus, X } from "lucide-react";
+import { Star, Edit2, Trash2, Plus, X, Link2, Save } from "lucide-react";
 
 type Size = { id?: number; size: string; price: number };
 type MilkOption = { id?: number; name: string; price: number };
@@ -17,6 +17,13 @@ type Item = {
   ingredients?: string[];
   sizes: Size[];
   milkOptions: MilkOption[];
+};
+
+type SocialLink = {
+  id?: number;
+  platform: string;
+  url: string;
+  enabled: boolean;
 };
 
 const empty: Item = {
@@ -53,14 +60,70 @@ export default function AdminPage() {
   const [form, setForm] = useState<Item>(empty);
   const [loading, setLoading] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([
+    { platform: "instagram", url: "", enabled: true },
+    { platform: "facebook", url: "", enabled: true },
+    { platform: "twitter", url: "", enabled: true },
+  ]);
+  const [savingLinks, setSavingLinks] = useState(false);
 
   useEffect(() => {
     refresh();
+    refreshSocialLinks();
   }, []);
 
   async function refresh() {
     const data = await fetch("/api/menu", { cache: "no-store" }).then((r) => r.json());
     setItems(data.items || []);
+  }
+
+  async function refreshSocialLinks() {
+    try {
+      const data = await fetch("/api/social-links", { cache: "no-store" }).then((r) => r.json());
+      const fetchedLinks = data.links || [];
+      
+      // Merge with default platforms, preserving existing data
+      const defaultPlatforms = ["instagram", "facebook", "twitter"];
+      const mergedLinks = defaultPlatforms.map(platform => {
+        const existing = fetchedLinks.find((l: SocialLink) => l.platform === platform);
+        return existing || { platform, url: "", enabled: true };
+      });
+      
+      setSocialLinks(mergedLinks);
+    } catch (error) {
+      console.error('Failed to fetch social links:', error);
+    }
+  }
+
+  async function saveSocialLinks() {
+    setSavingLinks(true);
+    try {
+      const response = await fetch("/api/social-links", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ links: socialLinks }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save social links');
+      }
+      
+      await refreshSocialLinks();
+      alert('Social links saved successfully!');
+    } catch (error) {
+      console.error('Failed to save social links:', error);
+      alert('Failed to save social links. Please try again.');
+    } finally {
+      setSavingLinks(false);
+    }
+  }
+
+  function updateSocialLink(index: number, field: 'url' | 'enabled', value: string | boolean) {
+    setSocialLinks(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
   }
 
   async function toggleFeatured(itemId: number, currentFeatured: boolean) {
@@ -504,6 +567,61 @@ export default function AdminPage() {
               );
             })}
             {!items.length && <div className="text-gray-500 text-sm">No items yet</div>}
+          </div>
+        </div>
+
+        {/* Social Links Management */}
+        <div className="bg-white rounded-xl p-6 warm-shadow">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-navy flex items-center gap-2">
+              <Link2 className="w-5 h-5" />
+              Social Media Links
+            </h2>
+          </div>
+          <p className="text-sm text-gray-600 mb-6">
+            Manage the social media links displayed in the footer. Leave URL empty to hide a platform.
+          </p>
+          
+          <div className="space-y-4">
+            {socialLinks.map((link, index) => (
+              <div key={link.platform} className="border rounded-md p-4">
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-navy mb-2 capitalize">
+                      {link.platform}
+                    </label>
+                    <input
+                      type="url"
+                      value={link.url}
+                      onChange={(e) => updateSocialLink(index, 'url', e.target.value)}
+                      className="w-full border rounded-md px-3 py-2"
+                      placeholder={`https://${link.platform}.com/yourprofile`}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 pt-6">
+                    <input
+                      type="checkbox"
+                      id={`enabled-${index}`}
+                      checked={link.enabled}
+                      onChange={(e) => updateSocialLink(index, 'enabled', e.target.checked)}
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor={`enabled-${index}`} className="text-sm text-navy">
+                      Enabled
+                    </label>
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            <button
+              onClick={saveSocialLinks}
+              disabled={savingLinks}
+              className="inline-flex items-center justify-center px-5 py-3 rounded-md solis-gradient text-white font-semibold hover:opacity-90 w-full"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {savingLinks ? "Saving..." : "Save Social Links"}
+            </button>
           </div>
         </div>
       </div>
