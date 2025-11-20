@@ -105,14 +105,17 @@ export default function AdminPage() {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to save social links');
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || `Failed to save social links (${response.status})`;
+        throw new Error(errorMessage);
       }
       
       await refreshSocialLinks();
       alert('Social links saved successfully!');
     } catch (error) {
       console.error('Failed to save social links:', error);
-      alert('Failed to save social links. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save social links. Please try again.';
+      alert(errorMessage);
     } finally {
       setSavingLinks(false);
     }
