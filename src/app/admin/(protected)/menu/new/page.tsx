@@ -5,6 +5,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 
 type SizeRow = { id: string; size: string; price: string };
+type MilkOptionRow = { id: string; name: string; price: string };
 
 const CATEGORIES = [
   "coffee",
@@ -23,8 +24,15 @@ export default function NewMenuItemPage() {
   const [isFeatured, setIsFeatured] = React.useState(false);
 
   const [sizes, setSizes] = React.useState<SizeRow[]>([
-    { id: crypto.randomUUID(), size: "Small", price: "" },
-    { id: crypto.randomUUID(), size: "Large", price: "" },
+    { id: crypto.randomUUID(), size: "Small", price: "4" },
+    { id: crypto.randomUUID(), size: "Large", price: "4.5" },
+  ]);
+  const [hasMilk, setHasMilk] = React.useState(false);
+  const [milkOptions, setMilkOptions] = React.useState<MilkOptionRow[]>([
+    { id: crypto.randomUUID(), name: "Oat", price: "0.5" },
+    { id: crypto.randomUUID(), name: "Almond", price: "0.5" },
+    { id: crypto.randomUUID(), name: "Soy", price: "0.5" },
+    { id: crypto.randomUUID(), name: "Lactose free", price: "0.5" },
   ]);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -39,6 +47,16 @@ export default function NewMenuItemPage() {
     setSizes((s) => s.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
   }
 
+  function addMilkOption() {
+    setMilkOptions((m) => [...m, { id: crypto.randomUUID(), name: "", price: "" }]);
+  }
+  function removeMilkOption(id: string) {
+    setMilkOptions((m) => m.filter((r) => r.id !== id));
+  }
+  function updateMilkOption(id: string, field: "name" | "price", value: string) {
+    setMilkOptions((m) => m.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -50,9 +68,15 @@ export default function NewMenuItemPage() {
         description: description || null,
         category,
         isFeatured,
+        hasMilk,
         sizes: sizes
           .filter((r) => r.size.trim() && r.price.trim())
           .map((r) => ({ size: r.size.trim(), price: Number(r.price) })),
+        milkOptions: hasMilk
+          ? milkOptions
+              .filter((r) => r.name.trim() && r.price.trim())
+              .map((r) => ({ name: r.name.trim(), price: Number(r.price) }))
+          : [],
       };
 
       if (payload.sizes.length === 0) {
@@ -133,6 +157,18 @@ export default function NewMenuItemPage() {
           </label>
         </div>
 
+        <div className="flex items-center gap-2">
+          <input
+            id="hasMilk"
+            type="checkbox"
+            checked={hasMilk}
+            onChange={(e) => setHasMilk(e.target.checked)}
+          />
+          <label htmlFor="hasMilk" className="text-sm text-navy">
+            Has Milk Options
+          </label>
+        </div>
+
         {/* Sizes */}
         <div>
           <div className="flex items-center justify-between mb-2">
@@ -175,6 +211,51 @@ export default function NewMenuItemPage() {
             ))}
           </div>
         </div>
+
+        {/* Milk Options */}
+        {hasMilk && (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-navy">Milk Options</label>
+              <button
+                type="button"
+                onClick={addMilkOption}
+                className="text-sm text-solis-gold hover:underline"
+              >
+                + Add milk option
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {milkOptions.map((row) => (
+                <div key={row.id} className="grid grid-cols-12 gap-2">
+                  <input
+                    className="col-span-6 border rounded-md px-3 py-2 focus:ring-2 focus:ring-solis-gold outline-none"
+                    placeholder="Oat"
+                    value={row.name}
+                    onChange={(e) => updateMilkOption(row.id, "name", e.target.value)}
+                  />
+                  <input
+                    className="col-span-5 border rounded-md px-3 py-2 focus:ring-2 focus:ring-solis-gold outline-none"
+                    placeholder="Price"
+                    type="number"
+                    step="0.01"
+                    value={row.price}
+                    onChange={(e) => updateMilkOption(row.id, "price", e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeMilkOption(row.id)}
+                    className="col-span-1 text-red-600"
+                    title="Remove"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 

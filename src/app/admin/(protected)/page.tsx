@@ -35,10 +35,15 @@ const empty: Item = {
   hasSizes: true,
   ingredients: [],
   sizes: [
-    { size: "Small", price: 0 },
-    { size: "Large", price: 0 },
+    { size: "Small", price: 4 },
+    { size: "Large", price: 4.5 },
   ],
-  milkOptions: [],
+  milkOptions: [
+    { name: "Oat", price: 0.5 },
+    { name: "Almond", price: 0.5 },
+    { name: "Soy", price: 0.5 },
+    { name: "Lactose free", price: 0.5 },
+  ],
 };
 
 const emptyFood: Item = {

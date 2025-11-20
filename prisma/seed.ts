@@ -20,7 +20,8 @@ async function run() {
       ('regular', 0.0),
       ('oat', 0.5),
       ('almond', 0.5),
-      ('soy', 0.5)
+      ('soy', 0.5),
+      ('lactose_free', 0.5)
     `;
   } catch (e) {
     console.log("Could not create milk upcharges:", e);

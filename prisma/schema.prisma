@@ -51,6 +51,7 @@ enum MilkOption {
   oat
   almond
   soy
+  lactose_free
 }
 
 // Milk upcharge pricing
