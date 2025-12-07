@@ -15,7 +15,7 @@ export default function LocationHours() {
 
             {[
               { icon: MapPin, title: "Location", text: "Shop 2, 77 Berry Street, North Sydney NSW 2060 Australia" },
-              { icon: Clock, title: "Opening Hours", text: "Mon-Fri 6AM-3:30PM · Sat-Sun Closed" },
+              { icon: Clock, title: "Opening Hours", text: "Mon-Fri 5:30AM-4:00PM · Sat-Sun Closed" },
               { icon: Phone, title: "Contact", text: "(555) 123-COFFEE — info@solisespresso.com" },
             ].map((c, i) => (
               <motion.div key={i} initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.1 * (i+1) }} viewport={{ once: true }}

@@ -65,7 +65,7 @@ export default function ContactPage() {
     {
       icon: Clock,
       title: "Hours",
-      details: ["Mon-Fri: 6AM - 3:30PM", "Sat-Sun: Closed"],
+      details: ["Mon-Fri: 5:30AM - 4:00PM", "Sat-Sun: Closed"],
     },
     {
       icon: Phone,

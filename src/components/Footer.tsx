@@ -74,7 +74,7 @@ export default async function Footer() {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-solis-gold">Opening Hours</h4>
             <div className="space-y-2 text-gray-300">
-              <div className="flex justify-between"><span>Monday - Friday</span><span>6AM - 3:30PM</span></div>
+              <div className="flex justify-between"><span>Monday - Friday</span><span>5:30AM - 4:00PM</span></div>
               <div className="flex justify-between"><span>Saturday - Sunday</span><span>Closed</span></div>
             </div>
           </div>
