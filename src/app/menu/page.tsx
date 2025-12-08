@@ -68,6 +68,14 @@ export default function MenuPage() {
     return items.filter((i) => i.category === active);
   }, [items, active]);
 
+  // Only show categories that have items
+  const visibleCategories = useMemo(() => {
+    const categoriesWithItems = new Set(items.map((item) => item.category));
+    return categories.filter(
+      (c) => c.id === "all" || categoriesWithItems.has(c.id as Item["category"])
+    );
+  }, [items]);
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
@@ -114,7 +122,7 @@ export default function MenuPage() {
             className="flex justify-center mb-16"
           >
             <div className="bg-white/90 backdrop-blur-sm warm-shadow border border-solis-gold/30 rounded-2xl p-2 flex flex-wrap gap-2 max-w-4xl">
-              {categories.map((c, index) => {
+              {visibleCategories.map((c, index) => {
                 const IconComponent = c.icon;
                 return (
                   <motion.button
