@@ -10,9 +10,10 @@ type Item = {
   id?: number;
   name: string;
   description?: string;
-  category: "coffee" | "cold_drinks" | "tea" | "pastries" | "sandwiches" | "desserts";
+  category: "coffee" | "cold_drinks" | "tea" | "pastries" | "sandwiches" | "desserts" | "bowls";
   isFeatured: boolean;
   hasMilk: boolean;
+  hasBowlAddons: boolean;
   hasSizes: boolean;
   ingredients?: string[];
   sizes: Size[];
@@ -32,6 +33,7 @@ const empty: Item = {
   category: "coffee",
   isFeatured: false,
   hasMilk: false,
+  hasBowlAddons: false,
   hasSizes: true,
   ingredients: [],
   sizes: [
@@ -52,6 +54,7 @@ const emptyFood: Item = {
   category: "pastries",
   isFeatured: false,
   hasMilk: false,
+  hasBowlAddons: false,
   hasSizes: false,
   ingredients: [],
   sizes: [
@@ -181,8 +184,8 @@ export default function AdminPage() {
   }
 
   function onCategoryChange(category: Item["category"]) {
-    const isFoodItem = ["pastries", "sandwiches", "desserts"].includes(category);
-    const wasFoodItem = ["pastries", "sandwiches", "desserts"].includes(form.category);
+    const isFoodItem = ["pastries", "sandwiches", "desserts", "bowls"].includes(category);
+    const wasFoodItem = ["pastries", "sandwiches", "desserts", "bowls"].includes(form.category);
     
     // If switching between similar types (food<->food or drink<->drink), try to preserve sizes
     let newSizes = form.sizes;
@@ -200,6 +203,7 @@ export default function AdminPage() {
       ...form,
       category,
       hasSizes: !isFoodItem,
+      hasBowlAddons: category === "bowls", // Auto-enable bowl add-ons for bowls category
       sizes: newSizes
     };
     setForm(newForm);
@@ -239,6 +243,7 @@ export default function AdminPage() {
     setForm({
       ...item,
       milkOptions: item.milkOptions || [],
+      hasBowlAddons: item.hasBowlAddons || false,
       hasSizes: item.sizes.length > 1 || (item.sizes.length === 1 && item.sizes[0].size !== "Single")
     });
     setEditingItem(item);
@@ -330,6 +335,7 @@ export default function AdminPage() {
                    <option value="pastries">Pastries</option>
                    <option value="sandwiches">Sandwiches</option>
                    <option value="desserts">Desserts</option>
+                   <option value="bowls">Bowls</option>
                  </select>
               </div>
             </div>
@@ -368,6 +374,18 @@ export default function AdminPage() {
                 />
                 <label htmlFor="hasMilk" className="text-sm text-navy">
                   Has Milk Options (Uses global milk pricing)
+                </label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  id="hasBowlAddons"
+                  type="checkbox"
+                  checked={form.hasBowlAddons}
+                  onChange={(e) => setForm({ ...form, hasBowlAddons: e.target.checked })}
+                />
+                <label htmlFor="hasBowlAddons" className="text-sm text-navy">
+                  Has Bowl Add-ons (Rice +$3, Avocado +$3)
                 </label>
               </div>
 
@@ -457,6 +475,7 @@ export default function AdminPage() {
                       )}
                       <div className="flex gap-4 mt-2 text-xs text-gray-500">
                         {it.hasMilk && <span>Has Milk Options</span>}
+                        {it.hasBowlAddons && <span>Has Bowl Add-ons</span>}
                         {it.sizes.length > 1 && <span>Multiple Sizes</span>}
                       </div>
                     </div>

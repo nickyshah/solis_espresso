@@ -16,6 +16,7 @@ model MenuItem {
   ingredients String[]    // Postgres string array; can be empty
   createdAt   DateTime    @default(now())
   hasMilk     Boolean     @default(false) // Whether item can have milk options
+  hasBowlAddons Boolean   @default(false) // Whether item can have bowl add-ons (rice, avocado)
 
   // NEW: relation to MenuSize
   sizes       MenuSize[]
@@ -38,6 +39,7 @@ enum Category {
   pastries
   sandwiches
   desserts
+  bowls
 }
 
 enum SizeOption {
@@ -61,6 +63,21 @@ model MilkUpcharge {
   upcharge    Float      // Additional cost for non-dairy milk
   
   @@unique([milkType])
+}
+
+// Bowl add-on options
+enum BowlAddOn {
+  rice
+  avocado
+}
+
+// Bowl add-on pricing
+model BowlUpcharge {
+  id          Int        @id @default(autoincrement())
+  addOnType   BowlAddOn
+  upcharge    Float      // Additional cost for add-on
+  
+  @@unique([addOnType])
 }
 
 // Contact form submissions

@@ -14,6 +14,7 @@ const CATEGORIES = [
   "pastries",
   "sandwiches",
   "desserts",
+  "bowls",
 ] as const;
 
 export default function NewMenuItemPage() {

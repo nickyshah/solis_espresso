@@ -8,7 +8,7 @@ function sanitizeString(input: string): string {
 }
 
 function validateCategory(category: string): boolean {
-  const validCategories = ['coffee', 'cold_drinks', 'tea', 'pastries', 'sandwiches', 'desserts'];
+  const validCategories = ['coffee', 'cold_drinks', 'tea', 'pastries', 'sandwiches', 'desserts', 'bowls'];
   return validCategories.includes(category);
 }
 
@@ -23,8 +23,8 @@ async function handleGET(req: Request) {
     const featured = searchParams.get("featured");
     const where = featured ? { isFeatured: true } : {};
 
-    // Run both queries in parallel for faster loading
-    const [items, milkUpcharges] = await Promise.all([
+    // Run all queries in parallel for faster loading
+    const [items, milkUpcharges, bowlUpcharges] = await Promise.all([
       prisma.menuItem.findMany({
         where,
         include: { sizes: true },
@@ -33,6 +33,9 @@ async function handleGET(req: Request) {
       prisma.milkUpcharge.findMany({
         orderBy: { milkType: 'asc' },
       }),
+      prisma.bowlUpcharge.findMany({
+        orderBy: { addOnType: 'asc' },
+      }).catch(() => []), // Return empty array if table doesn't exist yet
     ]);
 
     // Transform items to include custom size names and empty milk options for compatibility
@@ -47,10 +50,10 @@ async function handleGET(req: Request) {
       hasSizes: item.sizes.length > 1 || (item.sizes.length === 1 && item.sizes[0].size.toString() !== 'single')
     }));
 
-    return NextResponse.json({ items: transformedItems, milkUpcharges });
+    return NextResponse.json({ items: transformedItems, milkUpcharges, bowlUpcharges });
   } catch (error) {
     console.error('Menu fetch error:', error);
-    return NextResponse.json({ items: [], milkUpcharges: [] }, { status: 500 });
+    return NextResponse.json({ items: [], milkUpcharges: [], bowlUpcharges: [] }, { status: 500 });
   }
 }
 
@@ -111,6 +114,7 @@ async function handlePOST(req: Request) {
       category: body.category,
       isFeatured: !!body.isFeatured,
       hasMilk: !!body.hasMilk,
+      hasBowlAddons: !!body.hasBowlAddons,
       ingredients: body.ingredients ? body.ingredients.map((ing: string) => sanitizeString(ing)).filter((ing: string) => ing.length > 0) : []
     };
 
@@ -152,6 +156,7 @@ async function handlePOST(req: Request) {
         category: sanitizedData.category,
         isFeatured: sanitizedData.isFeatured,
         hasMilk: sanitizedData.hasMilk,
+        hasBowlAddons: sanitizedData.hasBowlAddons,
         ingredients: sanitizedData.ingredients,
         sizes: {
           create: sizesData,

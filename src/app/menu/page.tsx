@@ -2,17 +2,19 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Coffee, Leaf, Cookie, Sandwich, Cake, Star } from "lucide-react";
+import { Coffee, Leaf, Cookie, Sandwich, Cake, Star, Salad } from "lucide-react";
 
 type Size = { id: number; size: "small" | "large" | "single"; price: number };
 type MilkUpcharge = { id: number; milkType: "regular" | "oat" | "almond" | "soy"; upcharge: number };
+type BowlUpcharge = { id: number; addOnType: "rice" | "avocado"; upcharge: number };
 type Item = {
   id: number;
   name: string;
   description?: string | null;
-  category: "coffee" | "cold_drinks" | "tea" | "pastries" | "sandwiches" | "desserts";
+  category: "coffee" | "cold_drinks" | "tea" | "pastries" | "sandwiches" | "desserts" | "bowls";
   isFeatured: boolean;
   hasMilk: boolean;
+  hasBowlAddons: boolean;
   sizes: Size[];
 };
 
@@ -24,11 +26,13 @@ const categories = [
   { id: "pastries", label: "Pastries", icon: Cookie },
   { id: "sandwiches", label: "Sandwiches", icon: Sandwich },
   { id: "desserts", label: "Desserts", icon: Cake },
+  { id: "bowls", label: "Bowls", icon: Salad },
 ] as const;
 
 export default function MenuPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [milkUpcharges, setMilkUpcharges] = useState<MilkUpcharge[]>([]);
+  const [bowlUpcharges, setBowlUpcharges] = useState<BowlUpcharge[]>([]);
   const [active, setActive] = useState<(typeof categories)[number]["id"]>("all");
 
   useEffect(() => {
@@ -40,7 +44,7 @@ export default function MenuPage() {
           return JSON.parse(text);
         } catch (e) {
           console.error("Invalid JSON response:", text);
-          return { items: [], milkUpcharges: [] };
+          return { items: [], milkUpcharges: [], bowlUpcharges: [] };
         }
       })
       .then((data) => {
@@ -49,6 +53,9 @@ export default function MenuPage() {
         }
         if (data.milkUpcharges && Array.isArray(data.milkUpcharges)) {
           setMilkUpcharges(data.milkUpcharges);
+        }
+        if (data.bowlUpcharges && Array.isArray(data.bowlUpcharges)) {
+          setBowlUpcharges(data.bowlUpcharges);
         }
       })
       .catch((err) => {
@@ -240,6 +247,22 @@ export default function MenuPage() {
                                   <div key={milk.id} className="py-1">
                                     <span className="capitalize text-gray-600">
                                       {milk.milkType === 'regular' ? 'Dairy' : milk.milkType}-${milk.upcharge === 0 ? '0.00' : milk.upcharge.toFixed(2)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Bowl Add-ons */}
+                          {item.hasBowlAddons && bowlUpcharges.length > 0 && (
+                            <div className="pt-3 border-t border-gray-100">
+                              <div className="text-xs font-medium text-navy-light mb-2">Add-ons</div>
+                              <div className="grid grid-cols-2 gap-1 text-xs">
+                                {bowlUpcharges.map((addon) => (
+                                  <div key={addon.id} className="py-1">
+                                    <span className="capitalize text-gray-600">
+                                      {addon.addOnType}+${addon.upcharge.toFixed(2)}
                                     </span>
                                   </div>
                                 ))}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Star, Coffee, Leaf, Cookie, Sandwich, Cake } from "lucide-react";
+import { ArrowRight, Star, Coffee, Leaf, Cookie, Sandwich, Cake, Salad } from "lucide-react";
 
 type Size = { id: number; size: "small" | "large" | "single"; price: number };
 type MilkUpcharge = { id: number; milkType: "regular" | "oat" | "almond" | "soy"; upcharge: number };
@@ -11,7 +11,7 @@ type Item = {
   id: number;
   name: string;
   description?: string | null;
-  category: "coffee" | "cold_drinks" | "tea" | "pastries" | "sandwiches" | "desserts";
+  category: "coffee" | "cold_drinks" | "tea" | "pastries" | "sandwiches" | "desserts" | "bowls";
   isFeatured: boolean;
   hasMilk: boolean;
   sizes: Size[];
@@ -67,6 +67,8 @@ export default function FeaturedMenu() {
                   return Sandwich;
                 case 'desserts':
                   return Cake;
+                case 'bowls':
+                  return Salad;
                 default:
                   return Coffee;
               }

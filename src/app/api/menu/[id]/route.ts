@@ -23,6 +23,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
   if (body.isFeatured !== undefined) updateData.isFeatured = !!body.isFeatured;
   if (body.hasMilk !== undefined) updateData.hasMilk = !!body.hasMilk;
+  if (body.hasBowlAddons !== undefined) updateData.hasBowlAddons = !!body.hasBowlAddons;
   if (body.ingredients !== undefined) updateData.ingredients = body.ingredients ?? null;
   
   // Handle sizes update if provided
