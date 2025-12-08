@@ -9,7 +9,7 @@ type MilkOptionRow = { id: string; name: string; price: string };
 
 const CATEGORIES = [
   "coffee",
-  "cold-drinks",
+  "cold_drinks",
   "tea",
   "pastries",
   "sandwiches",

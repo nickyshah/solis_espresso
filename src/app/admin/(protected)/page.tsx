@@ -10,7 +10,7 @@ type Item = {
   id?: number;
   name: string;
   description?: string;
-  category: "coffee" | "cold-drinks" | "tea" | "pastries" | "sandwiches" | "desserts";
+  category: "coffee" | "cold_drinks" | "tea" | "pastries" | "sandwiches" | "desserts";
   isFeatured: boolean;
   hasMilk: boolean;
   hasSizes: boolean;
@@ -325,7 +325,7 @@ export default function AdminPage() {
                    className="w-full border rounded-md px-3 py-2"
                  >
                    <option value="coffee">Coffee</option>
-                   <option value="cold-drinks">Cold Drinks</option>
+                   <option value="cold_drinks">Cold Drinks</option>
                    <option value="tea">Tea</option>
                    <option value="pastries">Pastries</option>
                    <option value="sandwiches">Sandwiches</option>

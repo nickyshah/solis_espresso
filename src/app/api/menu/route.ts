@@ -59,7 +59,7 @@ async function handleGET(req: Request) {
  * {
  *   name: string,
  *   description?: string,
- *   category: "coffee"|"cold-drinks"|...,
+ *   category: "coffee"|"cold_drinks"|...,
  *   isFeatured?: boolean,
  *   hasMilk?: boolean,
  *   hasSizes?: boolean,

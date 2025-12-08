@@ -11,7 +11,7 @@ type Item = {
   id: number;
   name: string;
   description?: string | null;
-  category: "coffee" | "cold-drinks" | "tea" | "pastries" | "sandwiches" | "desserts";
+  category: "coffee" | "cold_drinks" | "tea" | "pastries" | "sandwiches" | "desserts";
   isFeatured: boolean;
   hasMilk: boolean;
   sizes: Size[];
@@ -57,7 +57,7 @@ export default function FeaturedMenu() {
             const getCategoryIcon = (category: string) => {
               switch (category) {
                 case 'coffee':
-                case 'cold-drinks':
+                case 'cold_drinks':
                   return Coffee;
                 case 'tea':
                   return Leaf;
@@ -108,7 +108,7 @@ export default function FeaturedMenu() {
                       </h3>
                     </div>
                     <div className="text-xs uppercase tracking-wider text-solis-gold font-semibold">
-                      {item.category.replace('-', ' ')}
+                      {item.category.replace('_', ' ')}
                     </div>
                   </div>
 
