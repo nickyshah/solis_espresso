@@ -18,33 +18,40 @@ function validatePrice(price: any): boolean {
 }
 
 async function handleGET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const featured = searchParams.get("featured");
-  const where = featured ? { isFeatured: true } : {};
+  try {
+    const { searchParams } = new URL(req.url);
+    const featured = searchParams.get("featured");
+    const where = featured ? { isFeatured: true } : {};
 
-  const items = await prisma.menuItem.findMany({
-    where,
-    include: { sizes: true },
-  });
-  
-  // Transform items to include custom size names and empty milk options for compatibility
-  const transformedItems = items.map(item => ({
-    ...item,
-    sizes: item.sizes.map(size => ({
-      ...size,
-      size: size.size === 'small' ? 'Small' : 
-            size.size === 'large' ? 'Large' : ''
-    })),
-    milkOptions: [], // Default empty array for now
-    hasSizes: item.sizes.length > 1 || (item.sizes.length === 1 && item.sizes[0].size.toString() !== 'single')
-  }));
-  
-  // Get milk upcharges using raw SQL
-  const milkUpcharges = await prisma.$queryRaw`
-    SELECT * FROM "MilkUpcharge" ORDER BY "milkType"
-  `;
-  
-  return Response.json({ items: transformedItems, milkUpcharges });
+    // Run both queries in parallel for faster loading
+    const [items, milkUpcharges] = await Promise.all([
+      prisma.menuItem.findMany({
+        where,
+        include: { sizes: true },
+        orderBy: { id: 'asc' },
+      }),
+      prisma.milkUpcharge.findMany({
+        orderBy: { milkType: 'asc' },
+      }),
+    ]);
+
+    // Transform items to include custom size names and empty milk options for compatibility
+    const transformedItems = items.map(item => ({
+      ...item,
+      sizes: item.sizes.map(size => ({
+        ...size,
+        size: size.size === 'small' ? 'Small' :
+          size.size === 'large' ? 'Large' : ''
+      })),
+      milkOptions: [], // Default empty array for now
+      hasSizes: item.sizes.length > 1 || (item.sizes.length === 1 && item.sizes[0].size.toString() !== 'single')
+    }));
+
+    return NextResponse.json({ items: transformedItems, milkUpcharges });
+  } catch (error) {
+    console.error('Menu fetch error:', error);
+    return NextResponse.json({ items: [], milkUpcharges: [] }, { status: 500 });
+  }
 }
 
 /**
@@ -64,7 +71,7 @@ async function handleGET(req: Request) {
 async function handlePOST(req: Request) {
   try {
     const body = await req.json();
-    
+
     // Validate required fields
     if (!body.name || !body.category) {
       return NextResponse.json(
@@ -72,7 +79,7 @@ async function handlePOST(req: Request) {
         { status: 400 }
       );
     }
-    
+
     // Validate field lengths
     if (body.name.length > 100 || (body.description && body.description.length > 500)) {
       return NextResponse.json(
@@ -80,7 +87,7 @@ async function handlePOST(req: Request) {
         { status: 400 }
       );
     }
-    
+
     // Validate category
     if (!validateCategory(body.category)) {
       return NextResponse.json(
@@ -88,7 +95,7 @@ async function handlePOST(req: Request) {
         { status: 400 }
       );
     }
-    
+
     // Validate ingredients array
     if (body.ingredients && (!Array.isArray(body.ingredients) || body.ingredients.length > 20)) {
       return NextResponse.json(
@@ -96,7 +103,7 @@ async function handlePOST(req: Request) {
         { status: 400 }
       );
     }
-    
+
     // Sanitize inputs
     const sanitizedData = {
       name: sanitizeString(body.name),
@@ -114,7 +121,7 @@ async function handlePOST(req: Request) {
         { status: 400 }
       );
     }
-    
+
     // Validate each size and price
     for (const size of body.sizes) {
       if (!validatePrice(size.price)) {
@@ -131,7 +138,7 @@ async function handlePOST(req: Request) {
       const sizeName = (s.size === '' || !s.size) ? 'single' : s.size.toLowerCase();
       if (sizeName.includes('small')) sizeEnum = 'small';
       else if (sizeName.includes('large')) sizeEnum = 'large';
-      
+
       return {
         size: sizeEnum as 'small' | 'large' | 'single',
         price: Number(s.price),

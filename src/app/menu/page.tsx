@@ -10,7 +10,7 @@ type Item = {
   id: number;
   name: string;
   description?: string | null;
-  category: "coffee" | "cold-drinks" | "tea" | "pastries" | "sandwiches" | "desserts";
+  category: "coffee" | "cold_drinks" | "tea" | "pastries" | "sandwiches" | "desserts";
   isFeatured: boolean;
   hasMilk: boolean;
   sizes: Size[];
@@ -19,7 +19,7 @@ type Item = {
 const categories = [
   { id: "all", label: "All Items", icon: null },
   { id: "coffee", label: "Coffee", icon: Coffee },
-  { id: "cold-drinks", label: "Cold Drinks", icon: Coffee },
+  { id: "cold_drinks", label: "Cold Drinks", icon: Coffee },
   { id: "tea", label: "Tea", icon: Leaf },
   { id: "pastries", label: "Pastries", icon: Cookie },
   { id: "sandwiches", label: "Sandwiches", icon: Sandwich },
@@ -33,7 +33,16 @@ export default function MenuPage() {
 
   useEffect(() => {
     fetch("/api/menu", { cache: "no-store" })
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (!r.ok) throw new Error("Failed to fetch menu");
+        const text = await r.text();
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          console.error("Invalid JSON response:", text);
+          return { items: [], milkUpcharges: [] };
+        }
+      })
       .then((data) => {
         if (data.items && Array.isArray(data.items)) {
           setItems(data.items);
@@ -41,6 +50,9 @@ export default function MenuPage() {
         if (data.milkUpcharges && Array.isArray(data.milkUpcharges)) {
           setMilkUpcharges(data.milkUpcharges);
         }
+      })
+      .catch((err) => {
+        console.error("Error loading menu:", err);
       });
   }, []);
 

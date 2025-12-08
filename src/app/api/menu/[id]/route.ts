@@ -17,7 +17,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   
   if (body.name !== undefined) updateData.name = body.name;
   if (body.description !== undefined) updateData.description = body.description;
-  if (body.category !== undefined) updateData.category = body.category;
+  if (body.category !== undefined) {
+    // Normalize category format (convert hyphens to underscores for database)
+    updateData.category = body.category?.replace('-', '_') || body.category;
+  }
   if (body.isFeatured !== undefined) updateData.isFeatured = !!body.isFeatured;
   if (body.hasMilk !== undefined) updateData.hasMilk = !!body.hasMilk;
   if (body.ingredients !== undefined) updateData.ingredients = body.ingredients ?? null;

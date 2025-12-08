@@ -60,17 +60,12 @@ export default function ContactPage() {
     {
       icon: MapPin,
       title: "Visit Us",
-      details: ["Shop 2, 77 Berry Street", "North Sydney NSW 2060 Australia"],
+      details: ["Shop 3, 77 Berry Street", "North Sydney NSW 2060 Australia"],
     },
     {
       icon: Clock,
       title: "Hours",
       details: ["Mon-Fri: 5:30AM - 4:00PM", "Sat-Sun: Closed"],
-    },
-    {
-      icon: Phone,
-      title: "Call Us",
-      details: ["(555) 123-COFFEE", "Available during business hours"],
     },
     {
       icon: Mail,
@@ -158,7 +153,7 @@ export default function ContactPage() {
                           type="tel"
                           value={formData.phone}
                           onChange={(e) => handleInputChange("phone", e.target.value)}
-                          placeholder="(555) 123-4567"
+                          placeholder="0400 000 000"
                           className="focus:border-solis-gold focus:ring-solis-gold"
                         />
                       </div>
@@ -292,7 +287,7 @@ export default function ContactPage() {
                 <Card className="overflow-hidden border-0 warm-shadow">
                   <div className="aspect-video relative">
                     <iframe
-                      src="https://maps.google.com/maps?q=Shop%202,%2077%20Berry%20Street,%20North%20Sydney%20NSW%202060,%20Australia&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                      src="https://maps.google.com/maps?q=Shop%203,%2077%20Berry%20Street,%20North%20Sydney%20NSW%202060,%20Australia&t=&z=15&ie=UTF8&iwloc=&output=embed"
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}
@@ -307,9 +302,9 @@ export default function ContactPage() {
                         <MapPin className="w-4 h-4 text-solis-gold" />
                         <h3 className="font-bold text-navy text-sm">Solis Espresso</h3>
                       </div>
-                      <p className="text-xs text-gray-600">Shop 2, 77 Berry Street<br />North Sydney NSW 2060</p>
+                      <p className="text-xs text-gray-600">Shop 3, 77 Berry Street<br />North Sydney NSW 2060</p>
                       <Button 
-                        onClick={() => window.open('https://www.google.com/maps/dir/?api=1&destination=Shop%202,%2077%20Berry%20Street,%20North%20Sydney%20NSW%202060,%20Australia', '_blank')}
+                        onClick={() => window.open('https://www.google.com/maps/dir/?api=1&destination=Shop%203,%2077%20Berry%20Street,%20North%20Sydney%20NSW%202060,%20Australia', '_blank')}
                         className="bg-solis-gold hover:bg-solis-gold/90 text-navy font-semibold text-xs px-3 py-1 mt-2 h-auto"
                         size="sm"
                       >

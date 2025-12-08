@@ -57,13 +57,13 @@ export default function HeaderNav() {
         <div className="flex h-20 items-center justify-between">
           {/* Brand */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative">
-              <div className="w-12 h-12 gold-gradient rounded-full grid place-items-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                <div className="text-navy font-bold text-xl">S</div>
-              </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-solis-gold rounded-full grid place-items-center">
-                <div className="w-2 h-2 bg-navy rounded-full" />
-              </div>
+            <div className="relative w-14 h-14 group-hover:scale-110 transition-transform duration-300">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src="/logo.png" 
+                alt="Solis Espresso Logo" 
+                className="w-full h-full object-contain rounded-full shadow-lg" 
+              />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-navy">Solis Espresso</h1>

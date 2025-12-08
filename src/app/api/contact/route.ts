@@ -132,8 +132,7 @@ async function handlePOST(req: Request) {
               We've received your message and one of our team members will get back to you within <strong>24 hours</strong>.</p>
               <p>In the meantime, we’d love to see you at our café:</p>
               <div style="background: #faf6f0; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #f4b942;">
-                <p style="margin: 4px 0;">📍 Shop 2, 77 Berry Street, North Sydney NSW 2060 Australia</p>
-                <p style="margin: 4px 0;">📞 (555) 123-COFFEE</p>
+                <p style="margin: 4px 0;">📍 Shop 3, 77 Berry Street, North Sydney NSW 2060 Australia</p>
                 <p style="margin: 4px 0;">⏰ Mon–Fri: 6AM–3:30PM, Sat–Sun: Closed</p>
               </div>
               <p style="margin: 16px 0;">Follow us on social media:</p>

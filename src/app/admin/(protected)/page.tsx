@@ -180,39 +180,27 @@ export default function AdminPage() {
     }));
   }
 
-  function addMilkOption() {
-    setForm(f => ({
-      ...f,
-      milkOptions: [...f.milkOptions, { name: "", price: 0 }]
-    }));
-  }
-
-  function updateMilkOption(index: number, field: 'name' | 'price', value: string | number) {
-    setForm(f => {
-      const newMilkOptions = [...f.milkOptions];
-      if (field === 'price') {
-        newMilkOptions[index] = { ...newMilkOptions[index], price: Number(value) || 0 };
-      } else {
-        newMilkOptions[index] = { ...newMilkOptions[index], name: value as string };
-      }
-      return { ...f, milkOptions: newMilkOptions };
-    });
-  }
-
-  function removeMilkOption(index: number) {
-    setForm(f => ({
-      ...f,
-      milkOptions: f.milkOptions.filter((_, i) => i !== index)
-    }));
-  }
-
   function onCategoryChange(category: Item["category"]) {
     const isFoodItem = ["pastries", "sandwiches", "desserts"].includes(category);
+    const wasFoodItem = ["pastries", "sandwiches", "desserts"].includes(form.category);
+    
+    // If switching between similar types (food<->food or drink<->drink), try to preserve sizes
+    let newSizes = form.sizes;
+    
+    if (isFoodItem && !wasFoodItem) {
+      // Switching from Drink to Food -> Reset to single size
+      newSizes = [{ size: "", price: 0 }];
+    } else if (!isFoodItem && wasFoodItem) {
+      // Switching from Food to Drink -> Reset to default drink sizes
+      newSizes = [{ size: "Small", price: 0 }, { size: "Large", price: 0 }];
+    }
+    // Else: Keep existing sizes (Drink->Drink or Food->Food)
+
     const newForm = {
       ...form,
       category,
       hasSizes: !isFoodItem,
-      sizes: isFoodItem ? [{ size: "", price: 0 }] : [{ size: "Small", price: 0 }, { size: "Large", price: 0 }]
+      sizes: newSizes
     };
     setForm(newForm);
   }
@@ -379,7 +367,7 @@ export default function AdminPage() {
                   onChange={(e) => setForm({ ...form, hasMilk: e.target.checked })}
                 />
                 <label htmlFor="hasMilk" className="text-sm text-navy">
-                  Has Milk Options
+                  Has Milk Options (Uses global milk pricing)
                 </label>
               </div>
 
@@ -442,51 +430,6 @@ export default function AdminPage() {
                 </div>
               )}
 
-              {/* Dynamic Milk Options */}
-              {form.hasMilk && (
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-navy">Milk Options</label>
-                    <button
-                      type="button"
-                      onClick={addMilkOption}
-                      className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Add Milk Option
-                    </button>
-                  </div>
-                  <div className="space-y-2">
-                    {form.milkOptions.map((milk, index) => (
-                      <div key={index} className="flex gap-2 items-center">
-                        <input
-                          type="text"
-                          placeholder="Milk name (e.g., Oat, Almond)"
-                          value={milk.name}
-                          onChange={(e) => updateMilkOption(index, 'name', e.target.value)}
-                          className="flex-1 border rounded-md px-3 py-2"
-                        />
-                        <input
-                          type="number"
-                          step="0.01"
-                          placeholder="Extra price"
-                          value={milk.price}
-                          onChange={(e) => updateMilkOption(index, 'price', e.target.value)}
-                          className="w-24 border rounded-md px-3 py-2"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeMilkOption(index)}
-                          className="text-red-600 hover:text-red-800 p-1"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               <button
                 onClick={submit}
                 disabled={loading || !form.name || !form.category}
@@ -529,14 +472,6 @@ export default function AdminPage() {
                             </div>
                           ))}
                         </div>
-                        {it.milkOptions && it.milkOptions.length > 0 && (
-                          <div className="text-xs text-gray-500 mt-2 text-right">
-                            <div className="font-medium mb-1">Milk Options:</div>
-                            {it.milkOptions.map((m, idx) => (
-                              <div key={idx}>{m.name} (+${m.price.toFixed(2)})</div>
-                            ))}
-                          </div>
-                        )}
                       </div>
                       
                       {/* Action buttons */}

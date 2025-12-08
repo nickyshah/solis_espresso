@@ -36,8 +36,13 @@ export default async function Footer() {
         <div className="grid md:grid-cols-4 gap-8">
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 gold-gradient rounded-full grid place-items-center">
-                <div className="text-navy font-bold text-lg">S</div>
+              <div className="w-12 h-12 relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src="/logo.png" 
+                  alt="Solis Espresso Logo" 
+                  className="w-full h-full object-contain rounded-full" 
+                />
               </div>
               <h3 className="text-2xl font-bold">Solis Espresso</h3>
             </div>
@@ -82,9 +87,8 @@ export default async function Footer() {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-solis-gold">Contact</h4>
             <div className="space-y-2 text-gray-300">
-              <p>Shop 2, 77 Berry Street</p>
+              <p>Shop 3, 77 Berry Street</p>
               <p>North Sydney, NSW 2060, Australia</p>
-              <p>(555) 123-COFFEE</p>
               <p>info@solisespresso.com</p>
             </div>
           </div>
