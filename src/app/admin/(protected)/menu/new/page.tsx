@@ -17,12 +17,17 @@ const CATEGORIES = [
   "bowls",
 ] as const;
 
+// Categories with multiple sizes (Small/Large): coffee, tea
+// Categories with single price: cold_drinks, pastries, sandwiches, desserts, bowls
+const isSizedDrinkCategory = (cat: string) => ["coffee", "tea"].includes(cat);
+
 export default function NewMenuItemPage() {
   const router = useRouter();
   const [name, setName] = React.useState("");
   const [description, setDescription] = React.useState("");
   const [category, setCategory] = React.useState<(typeof CATEGORIES)[number]>("coffee");
   const [isFeatured, setIsFeatured] = React.useState(false);
+  const [hasSizes, setHasSizes] = React.useState(true); // coffee has sizes by default
 
   const [sizes, setSizes] = React.useState<SizeRow[]>([
     { id: crypto.randomUUID(), size: "Small", price: "4" },
@@ -37,6 +42,27 @@ export default function NewMenuItemPage() {
   ]);
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  
+  // Handle category change - update defaults
+  function onCategoryChange(newCategory: typeof category) {
+    const wasSized = isSizedDrinkCategory(category);
+    const isSized = isSizedDrinkCategory(newCategory);
+    
+    setCategory(newCategory);
+    
+    if (isSized && !wasSized) {
+      // Switching TO sized drink -> Enable sizes
+      setHasSizes(true);
+      setSizes([
+        { id: crypto.randomUUID(), size: "Small", price: "4" },
+        { id: crypto.randomUUID(), size: "Large", price: "4.5" },
+      ]);
+    } else if (!isSized && wasSized) {
+      // Switching FROM sized drink -> Single price
+      setHasSizes(false);
+      setSizes([{ id: crypto.randomUUID(), size: "", price: "" }]);
+    }
+  }
 
   function addSize() {
     setSizes((s) => [...s, { id: crypto.randomUUID(), size: "", price: "" }]);
@@ -64,15 +90,24 @@ export default function NewMenuItemPage() {
     setError(null);
 
     try {
+      // For single-price items, only need price (no size name)
+      // For multi-size items, need both size name and price
+      const processedSizes = hasSizes
+        ? sizes
+            .filter((r) => r.size.trim() && r.price.trim())
+            .map((r) => ({ size: r.size.trim(), price: Number(r.price) }))
+        : sizes
+            .filter((r) => r.price.trim())
+            .map((r) => ({ size: r.size.trim() || "", price: Number(r.price) }));
+
       const payload = {
         name,
         description: description || null,
         category,
         isFeatured,
         hasMilk,
-        sizes: sizes
-          .filter((r) => r.size.trim() && r.price.trim())
-          .map((r) => ({ size: r.size.trim(), price: Number(r.price) })),
+        hasSizes,
+        sizes: processedSizes,
         milkOptions: hasMilk
           ? milkOptions
               .filter((r) => r.name.trim() && r.price.trim())
@@ -82,7 +117,7 @@ export default function NewMenuItemPage() {
 
       if (payload.sizes.length === 0) {
         setSaving(false);
-        setError("Please add at least one size with a price.");
+        setError(hasSizes ? "Please add at least one size with a price." : "Please enter a price.");
         return;
       }
 
@@ -136,11 +171,11 @@ export default function NewMenuItemPage() {
           <select
             className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-solis-gold outline-none"
             value={category}
-            onChange={(e) => setCategory(e.target.value as any)}
+            onChange={(e) => onCategoryChange(e.target.value as typeof category)}
           >
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {c[0].toUpperCase() + c.slice(1)}
+                {c[0].toUpperCase() + c.slice(1).replace('_', ' ')}
               </option>
             ))}
           </select>
@@ -170,48 +205,87 @@ export default function NewMenuItemPage() {
           </label>
         </div>
 
-        {/* Sizes */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium text-navy">Sizes</label>
-            <button
-              type="button"
-              onClick={addSize}
-              className="text-sm text-solis-gold hover:underline"
-            >
-              + Add size
-            </button>
-          </div>
-
-          <div className="space-y-2">
-            {sizes.map((row) => (
-              <div key={row.id} className="grid grid-cols-12 gap-2">
-                <input
-                  className="col-span-6 border rounded-md px-3 py-2 focus:ring-2 focus:ring-solis-gold outline-none"
-                  placeholder="Small"
-                  value={row.size}
-                  onChange={(e) => updateSize(row.id, "size", e.target.value)}
-                />
-                <input
-                  className="col-span-5 border rounded-md px-3 py-2 focus:ring-2 focus:ring-solis-gold outline-none"
-                  placeholder="Price"
-                  type="number"
-                  step="0.01"
-                  value={row.price}
-                  onChange={(e) => updateSize(row.id, "price", e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={() => removeSize(row.id)}
-                  className="col-span-1 text-red-600"
-                  title="Remove"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
+        {/* Has Sizes checkbox */}
+        <div className="flex items-center gap-2">
+          <input
+            id="hasSizes"
+            type="checkbox"
+            checked={hasSizes}
+            onChange={(e) => {
+              setHasSizes(e.target.checked);
+              if (e.target.checked) {
+                setSizes([
+                  { id: crypto.randomUUID(), size: "Small", price: "" },
+                  { id: crypto.randomUUID(), size: "Large", price: "" },
+                ]);
+              } else {
+                setSizes([{ id: crypto.randomUUID(), size: "", price: "" }]);
+              }
+            }}
+          />
+          <label htmlFor="hasSizes" className="text-sm text-navy">
+            Has Size Options
+          </label>
         </div>
+
+        {/* Sizes or Single Price */}
+        {hasSizes ? (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-navy">Sizes</label>
+              <button
+                type="button"
+                onClick={addSize}
+                className="text-sm text-solis-gold hover:underline"
+              >
+                + Add size
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {sizes.map((row) => (
+                <div key={row.id} className="grid grid-cols-12 gap-2">
+                  <input
+                    className="col-span-6 border rounded-md px-3 py-2 focus:ring-2 focus:ring-solis-gold outline-none"
+                    placeholder="Small"
+                    value={row.size}
+                    onChange={(e) => updateSize(row.id, "size", e.target.value)}
+                  />
+                  <input
+                    className="col-span-5 border rounded-md px-3 py-2 focus:ring-2 focus:ring-solis-gold outline-none"
+                    placeholder="Price"
+                    type="number"
+                    step="0.01"
+                    value={row.price}
+                    onChange={(e) => updateSize(row.id, "price", e.target.value)}
+                  />
+                  {sizes.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeSize(row.id)}
+                      className="col-span-1 text-red-600"
+                      title="Remove"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div>
+            <label className="block text-sm font-medium text-navy mb-1">Price</label>
+            <input
+              className="w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-solis-gold outline-none"
+              placeholder="Enter price"
+              type="number"
+              step="0.01"
+              value={sizes[0]?.price || ""}
+              onChange={(e) => setSizes([{ id: sizes[0]?.id || crypto.randomUUID(), size: "", price: e.target.value }])}
+            />
+          </div>
+        )}
 
         {/* Milk Options */}
         {hasMilk && (

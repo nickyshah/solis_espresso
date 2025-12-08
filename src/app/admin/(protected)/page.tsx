@@ -184,32 +184,37 @@ export default function AdminPage() {
   }
 
   function onCategoryChange(category: Item["category"]) {
-    const isFoodItem = ["pastries", "sandwiches", "desserts", "bowls"].includes(category);
-    const wasFoodItem = ["pastries", "sandwiches", "desserts", "bowls"].includes(form.category);
+    // Categories with multiple sizes (Small/Large): coffee, tea
+    // Categories with single price: cold_drinks, pastries, sandwiches, desserts, bowls
+    const isSizedDrink = ["coffee", "tea"].includes(category);
+    const wasSizedDrink = ["coffee", "tea"].includes(form.category);
     
-    // If switching between similar types (food<->food or drink<->drink), try to preserve sizes
     let newSizes = form.sizes;
+    let newHasSizes = form.hasSizes;
     
-    if (isFoodItem && !wasFoodItem) {
-      // Switching from Drink to Food -> Reset to single size
-      newSizes = [{ size: "", price: 0 }];
-    } else if (!isFoodItem && wasFoodItem) {
-      // Switching from Food to Drink -> Reset to default drink sizes
+    if (isSizedDrink && !wasSizedDrink) {
+      // Switching TO sized drink (coffee/tea) -> Enable sizes with Small/Large
       newSizes = [{ size: "Small", price: 0 }, { size: "Large", price: 0 }];
+      newHasSizes = true;
+    } else if (!isSizedDrink && wasSizedDrink) {
+      // Switching FROM sized drink to single-price item -> Reset to single price
+      newSizes = [{ size: "", price: 0 }];
+      newHasSizes = false;
     }
-    // Else: Keep existing sizes (Drink->Drink or Food->Food)
+    // Else: Keep existing sizes (staying within same type)
 
     const newForm = {
       ...form,
       category,
-      hasSizes: !isFoodItem,
+      hasSizes: newHasSizes,
       hasBowlAddons: category === "bowls", // Auto-enable bowl add-ons for bowls category
       sizes: newSizes
     };
     setForm(newForm);
   }
 
-  const isFoodCategory = ["pastries", "sandwiches", "desserts"].includes(form.category);
+  // Categories that use single price (no size options)
+  const isSinglePriceCategory = ["cold_drinks", "pastries", "sandwiches", "desserts", "bowls"].includes(form.category);
 
   async function submit() {
     setLoading(true);
@@ -229,7 +234,7 @@ export default function AdminPage() {
       }
       
       await refresh();
-      setForm(isFoodCategory ? emptyFood : empty);
+      setForm(isSinglePriceCategory ? emptyFood : empty);
       setEditingItem(null);
     } catch (error) {
       console.error('Failed to save item:', error);
@@ -240,11 +245,16 @@ export default function AdminPage() {
   }
 
   function editItem(item: Item) {
+    // Determine if item has multiple sizes or a named single size
+    // Single-price items have empty size name (""), sized items have names like "Small", "Large"
+    const hasSizes = item.sizes.length > 1 || 
+      (item.sizes.length === 1 && item.sizes[0].size.trim() !== "");
+    
     setForm({
       ...item,
       milkOptions: item.milkOptions || [],
       hasBowlAddons: item.hasBowlAddons || false,
-      hasSizes: item.sizes.length > 1 || (item.sizes.length === 1 && item.sizes[0].size !== "Single")
+      hasSizes
     });
     setEditingItem(item);
   }
